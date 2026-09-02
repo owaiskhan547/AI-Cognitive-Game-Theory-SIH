@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react"
 import { useNavigate, Link } from "react-router-dom"
-import { Brain } from "lucide-react"
+import { Brain, Mail, Lock, Eye, EyeOff, Check, ShieldCheck, Heart, ArrowRight } from "lucide-react"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -37,11 +36,12 @@ export default function LoginPage() {
   const [role, setRole] = useState<"patient" | "caregiver">("patient")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
   const [errorMsg, setErrorMsg] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
 
-  // Redirect if already authenticated
+  // Auto redirect if already authenticated
   useEffect(() => {
     if (!loading && user) {
       if (userRole === "caregiver") {
@@ -56,7 +56,7 @@ export default function LoginPage() {
     e.preventDefault()
     setIsLoading(true)
     setErrorMsg("")
-    
+
     try {
       await signIn(email, password)
       if (role === "patient") {
@@ -85,107 +85,244 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8">
-      <div className="w-full max-w-md">
-        <Card>
-          <CardHeader className="space-y-3 items-center text-center">
-            <div className="w-12 h-12 bg-primary/10 flex items-center justify-center rounded-full mb-2">
-              <Brain className="w-8 h-8 text-primary" />
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#070707] text-white px-4 py-8 relative overflow-hidden">
+      {/* Background Subtle Lime Glow */}
+      <div className="absolute -top-40 -left-40 w-96 h-96 bg-lime-500/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-lime-500/10 rounded-full blur-[120px] pointer-events-none" />
+
+      {/* Main Dual-Panel Container */}
+      <div className="w-full max-w-5xl bg-[#0f0f0f] border border-white/10 rounded-3xl shadow-2xl p-6 sm:p-10 lg:p-12 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+          
+          {/* Left Column: Brand & Visual */}
+          <div className="lg:col-span-5 flex flex-col justify-between h-full space-y-6">
+            {/* Logo and Brand */}
+            <div>
+              <div className="w-16 h-16 rounded-full border-2 border-lime-400 bg-lime-950/40 flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(163,230,53,0.3)]">
+                <Brain className="w-9 h-9 text-lime-400" />
+              </div>
+              <h1 className="text-3xl font-bold tracking-tight">
+                Smriti<span className="text-lime-400">Care</span>
+              </h1>
+              <p className="text-xs text-neutral-400 mt-1 font-medium">
+                Remember. Connect. Live independently.
+              </p>
+
+              {/* Heart Divider */}
+              <div className="flex items-center gap-3 my-5 opacity-40">
+                <div className="h-px flex-1 bg-gradient-to-r from-transparent to-white/40" />
+                <Heart className="w-3.5 h-3.5 text-lime-400 fill-lime-400/30" />
+                <div className="h-px flex-1 bg-gradient-to-l from-transparent to-white/40" />
+              </div>
+
+              {/* Welcome Message */}
+              <div className="space-y-1.5">
+                <h2 className="text-2xl font-bold flex items-center gap-2">
+                  Welcome back! <span className="inline-block animate-wave">👋</span>
+                </h2>
+                <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed">
+                  Sign in to continue your journey of care, support and meaningful moments.
+                </p>
+              </div>
             </div>
-            <CardTitle className="text-2xl">SmritiCare</CardTitle>
-            <CardDescription>Sign in to your account</CardDescription>
-          </CardHeader>
-          <CardContent>
+
+            {/* Couple Illustration */}
+            <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-lg bg-black/40">
+              <img
+                src="/couple-illustration.jpg"
+                alt="Elderly couple illustration"
+                className="w-full h-48 sm:h-56 object-cover object-top opacity-90 hover:opacity-100 transition-opacity"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f0f] via-transparent to-transparent opacity-80" />
+            </div>
+
+            {/* Privacy / Security Badge */}
+            <div className="bg-[#141414] border border-white/5 rounded-2xl p-4 flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-lime-500/10 border border-lime-400/30 flex items-center justify-center shrink-0">
+                <ShieldCheck className="w-5 h-5 text-lime-400" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-lime-400">Your data is safe with us</p>
+                <p className="text-[11px] text-neutral-400 mt-0.5">We prioritize your privacy and security.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Form */}
+          <div className="lg:col-span-7 flex flex-col justify-center">
+            <h3 className="text-xl font-bold text-white mb-4">I am a...</h3>
+
+            {/* Role Selection Cards */}
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              {/* Patient Card */}
+              <div
+                onClick={() => setRole("patient")}
+                className={`relative cursor-pointer rounded-2xl p-5 text-center transition-all duration-300 border flex flex-col items-center justify-center ${
+                  role === "patient"
+                    ? "border-lime-400 bg-lime-950/20 shadow-[0_0_25px_rgba(163,230,53,0.18)]"
+                    : "border-white/10 bg-[#141414] hover:border-white/20 opacity-70 hover:opacity-100"
+                }`}
+              >
+                {role === "patient" && (
+                  <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-lime-400 flex items-center justify-center shadow-md">
+                    <Check className="w-3.5 h-3.5 text-black stroke-[3.5]" />
+                  </div>
+                )}
+                <div className="w-20 h-20 rounded-full overflow-hidden mb-3 border-2 border-lime-400/40 bg-neutral-900 shadow-inner">
+                  <img
+                    src="/patient-avatar.jpg"
+                    alt="Patient Avatar"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <h4 className={`text-base font-bold ${role === "patient" ? "text-lime-400" : "text-white"}`}>
+                  Patient
+                </h4>
+                <p className="text-xs text-neutral-400 mt-1 leading-snug">
+                  Simple & supportive access for patients
+                </p>
+              </div>
+
+              {/* Caregiver Card */}
+              <div
+                onClick={() => setRole("caregiver")}
+                className={`relative cursor-pointer rounded-2xl p-5 text-center transition-all duration-300 border flex flex-col items-center justify-center ${
+                  role === "caregiver"
+                    ? "border-lime-400 bg-lime-950/20 shadow-[0_0_25px_rgba(163,230,53,0.18)]"
+                    : "border-white/10 bg-[#141414] hover:border-white/20 opacity-70 hover:opacity-100"
+                }`}
+              >
+                {role === "caregiver" && (
+                  <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-lime-400 flex items-center justify-center shadow-md">
+                    <Check className="w-3.5 h-3.5 text-black stroke-[3.5]" />
+                  </div>
+                )}
+                <div className="w-20 h-20 rounded-full overflow-hidden mb-3 border-2 border-lime-400/40 bg-neutral-900 shadow-inner">
+                  <img
+                    src="/caregiver-avatar.jpg"
+                    alt="Caregiver Avatar"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <h4 className={`text-base font-bold ${role === "caregiver" ? "text-lime-400" : "text-white"}`}>
+                  Caregiver
+                </h4>
+                <p className="text-xs text-neutral-400 mt-1 leading-snug">
+                  Manage and support your loved one's care
+                </p>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-white/10" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-[#0f0f0f] px-3 text-neutral-500 font-medium">or</span>
+              </div>
+            </div>
+
+            {/* Error message alert */}
             {errorMsg && (
-              <div className="p-3 mb-4 text-sm text-red-500 bg-red-500/10 border border-red-500/20 rounded-lg">
+              <div className="p-3.5 mb-4 text-xs sm:text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl">
                 {errorMsg}
               </div>
             )}
 
-            {/* Role Selection */}
-            <div className="space-y-2 mb-6">
-              <Label>I am a...</Label>
-              <div className="grid grid-cols-2 gap-3">
-                <Button
-                  type="button"
-                  variant={role === "patient" ? "default" : "outline"}
-                  onClick={() => setRole("patient")}
-                  className="w-full"
-                >
-                  Patient
-                </Button>
-                <Button
-                  type="button"
-                  variant={role === "caregiver" ? "default" : "outline"}
-                  onClick={() => setRole("caregiver")}
-                  className="w-full"
-                >
-                  Caregiver
-                </Button>
-              </div>
-            </div>
-
-            {/* Google Sign In Button */}
-            <Button
-              type="button"
-              variant="outline"
-              size="lg"
-              onClick={handleGoogleLogin}
-              disabled={isGoogleLoading || isLoading}
-              className="w-full flex items-center justify-center mb-6 h-12 border-border/80 hover:bg-secondary/50"
-            >
-              <GoogleIcon />
-              {isGoogleLoading ? "Connecting to Google..." : "Continue with Google"}
-            </Button>
-
-            <div className="relative mb-6">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">Or continue with email</span>
-              </div>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input 
-                    id="email" 
-                    type="email" 
-                    placeholder="name@example.com"
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="email" className="text-xs text-neutral-300 font-medium">
+                  Email
+                </Label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-lime-400/80 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    required 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input 
-                    id="password" 
-                    type="password" 
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required 
+                    className="pl-10 h-12 bg-[#161616] border-white/10 text-white placeholder:text-neutral-500 rounded-xl focus-visible:ring-lime-400"
+                    required
                   />
                 </div>
               </div>
 
-              <Button type="submit" className="w-full" size="lg" disabled={isLoading || isGoogleLoading}>
-                {isLoading ? "Signing in..." : "Sign In with Email"}
+              <div className="space-y-1.5">
+                <Label htmlFor="password" className="text-xs text-neutral-300 font-medium">
+                  Password
+                </Label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-lime-400/80 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pl-10 pr-10 h-12 bg-[#161616] border-white/10 text-white placeholder:text-neutral-500 rounded-xl focus-visible:ring-lime-400"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Forgot Password */}
+              <div className="flex justify-end">
+                <a href="#forgot" className="text-xs text-lime-400 hover:underline font-medium">
+                  Forgot password?
+                </a>
+              </div>
+
+              {/* Submit Button */}
+              <Button
+                type="submit"
+                disabled={isLoading || isGoogleLoading}
+                className="w-full h-12 rounded-xl bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-300 hover:to-lime-400 text-neutral-950 font-bold text-base shadow-[0_0_20px_rgba(163,230,53,0.3)] transition-all flex items-center justify-center gap-2 mt-2 cursor-pointer"
+              >
+                <span>{isLoading ? "Signing in..." : "Sign In with Email"}</span>
+                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
               </Button>
 
-              <div className="text-center text-sm">
-                <span className="text-muted-foreground">Don't have an account? </span>
-                <Link to="/signup" className="text-primary hover:underline font-medium">
-                  Sign up
+              {/* Google Button */}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleGoogleLogin}
+                disabled={isGoogleLoading || isLoading}
+                className="w-full h-12 rounded-xl bg-[#161616] hover:bg-[#202020] border-white/10 text-white font-medium text-sm transition-all flex items-center justify-center cursor-pointer"
+              >
+                <GoogleIcon />
+                <span>{isGoogleLoading ? "Connecting to Google..." : "Continue with Google"}</span>
+              </Button>
+
+              {/* Footer text */}
+              <div className="text-center text-xs text-neutral-400 pt-2">
+                Don't have an account?{" "}
+                <Link to="/signup" className="text-lime-400 hover:underline font-semibold ml-1">
+                  Create one
                 </Link>
               </div>
             </form>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
+
+      {/* Footer tagline */}
+      <footer className="mt-8 flex items-center gap-2 text-xs text-neutral-500 font-medium">
+        <Brain className="w-4 h-4 text-lime-400" />
+        <span>
+          <strong className="text-neutral-400">SmritiCare</strong> – Caring Today, Supporting Tomorrow.
+        </span>
+      </footer>
     </div>
   )
 }
