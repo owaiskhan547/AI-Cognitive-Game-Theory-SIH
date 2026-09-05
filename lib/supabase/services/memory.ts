@@ -9,13 +9,38 @@ export type MemoryInsert = Database['public']['Tables']['memories']['Insert']
  */
 export const memoryService = {
   /**
+   * Get or auto-create patient record for a given user profile ID.
+   */
+  async getOrCreatePatientRecord(userId: string) {
+    const { data: existing } = await supabase
+      .from('patients')
+      .select('id')
+      .or(`id.eq.${userId},profile_id.eq.${userId}`)
+      .maybeSingle()
+
+    if (existing) return existing
+
+    const { data: newPatient, error } = await supabase
+      .from('patients')
+      .upsert({ profile_id: userId }, { onConflict: 'profile_id' })
+      .select('id')
+      .single()
+
+    if (error) throw error
+    return newPatient
+  },
+
+  /**
    * Get all memories for a specific patient.
    */
-  async getPatientMemories(patientId: string) {
+  async getPatientMemories(userId: string) {
+    const patientRecord = await this.getOrCreatePatientRecord(userId)
+    const targetId = patientRecord?.id || userId
+
     const { data, error } = await supabase
       .from('memories')
       .select('*')
-      .eq('patient_id', patientId)
+      .eq('patient_id', targetId)
       .order('created_at', { ascending: false })
 
     if (error) throw error

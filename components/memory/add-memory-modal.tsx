@@ -45,7 +45,7 @@ export function AddMemoryModal({ onMemoryAdded, patientId }: AddMemoryModalProps
       return
     }
 
-    const targetPatientId = patientId || user?.id
+    let targetPatientId = patientId || user?.id
     if (!targetPatientId) {
       toast.error('Patient ID not found')
       return
@@ -53,6 +53,11 @@ export function AddMemoryModal({ onMemoryAdded, patientId }: AddMemoryModalProps
 
     setLoading(true)
     try {
+      // Resolve patient_id from profile or patient record
+      const patientRecord = await memoryService.getOrCreatePatientRecord(targetPatientId)
+      if (patientRecord?.id) {
+        targetPatientId = patientRecord.id
+      }
       let mediaUrl: string | null = null
 
       if (file) {
