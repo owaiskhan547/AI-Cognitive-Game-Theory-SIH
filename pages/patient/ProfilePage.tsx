@@ -10,7 +10,8 @@ import { mockPatient } from "@/lib/mock-data"
 import { useAuth } from "@/contexts/AuthContext"
 
 export default function PatientProfilePage() {
-  const { signOut } = useAuth()
+  const { profile, user, signOut } = useAuth()
+  const userName = profile?.full_name || user?.user_metadata?.full_name || mockPatient.name
 
   return (
     <div>
@@ -25,17 +26,17 @@ export default function PatientProfilePage() {
           <CardContent className="pt-6">
             <div className="flex flex-col items-center text-center gap-4">
               <Avatar className="w-24 h-24">
-                <AvatarImage src={mockPatient.avatar} alt={mockPatient.name} />
+                <AvatarImage src={profile?.avatar_url || mockPatient.avatar} alt={userName} />
                 <AvatarFallback className="text-2xl">
-                  {mockPatient.name.split(" ").map(n => n[0]).join("")}
+                  {userName.split(" ").map(n => n[0]).join("")}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <h2 className="text-2xl font-bold text-foreground">{mockPatient.name}</h2>
-                <p className="text-lg text-muted-foreground">Age: {mockPatient.age}</p>
+                <h2 className="text-2xl font-bold text-foreground">{userName}</h2>
+                <p className="text-lg text-muted-foreground">{user?.email || `Age: ${mockPatient.age}`}</p>
               </div>
               <Badge variant="secondary" className="text-base px-4 py-1">
-                {mockPatient.condition}
+                {profile?.role ? profile.role.toUpperCase() : mockPatient.condition}
               </Badge>
             </div>
           </CardContent>
