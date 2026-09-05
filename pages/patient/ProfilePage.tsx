@@ -98,13 +98,13 @@ export default function PatientProfilePage() {
           size="xl"
           rounded="xl"
           className="w-full gap-3 text-lg"
-          onClick={() => signOut()}
-          asChild
+          onClick={async () => {
+            await signOut()
+            window.location.href = '/login'
+          }}
         >
-          <Link to="/login">
-            <LogOut className="w-5 h-5" />
-            Log Out
-          </Link>
+          <LogOut className="w-5 h-5" />
+          Log Out
         </Button>
       </div>
     </div>
