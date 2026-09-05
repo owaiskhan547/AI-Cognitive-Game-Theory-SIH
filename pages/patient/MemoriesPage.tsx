@@ -46,6 +46,8 @@ export default function PatientMemoriesPage() {
     return url.startsWith('data:video') || url.endsWith('.mp4') || url.endsWith('.webm')
   }
 
+  const displayList = memories.length > 0 ? memories : (mockMemories as any[])
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
