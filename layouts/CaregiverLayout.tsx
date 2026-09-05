@@ -4,11 +4,18 @@ import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import { CaregiverSidebar } from '@/components/caregiver/caregiver-sidebar'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 import { Separator } from '@/components/ui/separator'
+<<<<<<< HEAD
 import { CaregiverPatientsProvider } from '@/features/caregiver/context'
 
 export function CaregiverLayout({ children }: { children?: React.ReactNode }) {
   return (
     <CaregiverPatientsProvider><SidebarProvider>
+=======
+
+export function CaregiverLayout({ children }: { children?: React.ReactNode }) {
+  return (
+    <SidebarProvider>
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d
       <CaregiverSidebar />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 border-b border-border px-4">
@@ -20,6 +27,10 @@ export function CaregiverLayout({ children }: { children?: React.ReactNode }) {
           {children || <Outlet />}
         </main>
       </SidebarInset>
+<<<<<<< HEAD
     </SidebarProvider></CaregiverPatientsProvider>
+=======
+    </SidebarProvider>
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d
   )
 }

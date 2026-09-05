@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase/client'
+<<<<<<< HEAD
 import type { AssignedPatientSummary, CaregiverActivity, CaregiverStats, DateRange, GameScoreRow, ProgressReport, ProgressSummary, Reminder, ReminderFormData } from './types'
 
 const fromDate = (days: number) => new Date(Date.now() - days * 86400000).toISOString()
@@ -78,4 +79,60 @@ export class CaregiverRepository {
   static async getPatientOverview(patient: AssignedPatientSummary) { const stats = await this.getCaregiverStats(patient.patientId); const activity = await this.getPatientActivity(patient.patientId, 90); const age = patient.dob ? Math.floor((Date.now() - new Date(patient.dob).getTime()) / 31557600000) : null; return { ...patient, age, latestActivityAt: activity[0]?.occurredAt ?? null, activeMedications: stats.activeMedications, upcomingReminders: stats.upcomingReminders } }
   static async getWeeklyReport(patientId: string): Promise<ProgressReport> { const [stats, activities, reminders] = await Promise.all([this.getCaregiverStats(patientId, 7), this.getPatientActivity(patientId, 7), this.getPatientSchedules(patientId, 7)]); return { period: 'weekly', stats, activities, reminderCount: reminders.length } }
   static async getMonthlyReport(patientId: string): Promise<ProgressReport> { const [stats, activities, reminders] = await Promise.all([this.getCaregiverStats(patientId, 30), this.getPatientActivity(patientId, 30), this.getPatientSchedules(patientId, 30)]); return { period: 'monthly', stats, activities, reminderCount: reminders.length } }
+=======
+import type { AssignedPatientSummary } from './types'
+
+export class CaregiverRepository {
+  /**
+   * Fetch all patients assigned to the caregiver.
+   */
+  static async getAssignedPatients(caregiverProfileId: string): Promise<AssignedPatientSummary[]> {
+    // 1. Get caregiver record
+    const { data: caregiver, error: cErr } = await supabase
+      .from('caregivers')
+      .select('id')
+      .eq('profile_id', caregiverProfileId)
+      .single()
+
+    if (cErr || !caregiver) return []
+
+    // 2. Get links with patients
+    const { data: links, error: lErr } = await supabase
+      .from('caregiver_patients')
+      .select('patient_id, relationship')
+      .eq('caregiver_id', caregiver.id)
+
+    if (lErr || !links) return []
+
+    const patientSummaries: AssignedPatientSummary[] = []
+
+    for (const link of links) {
+      const { data: patient } = await supabase
+        .from('patients')
+        .select('id, profile_id, emergency_contact, medical_notes')
+        .eq('id', link.patient_id)
+        .single()
+
+      if (patient) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name, dob, avatar_url')
+          .eq('id', patient.profile_id)
+          .single()
+
+        patientSummaries.push({
+          patientId: patient.id,
+          fullName: profile?.full_name || 'Patient',
+          dob: profile?.dob || null,
+          avatarUrl: profile?.avatar_url || null,
+          relationship: link.relationship,
+          emergencyContact: patient.emergency_contact,
+          medicalNotes: patient.medical_notes,
+        })
+      }
+    }
+
+    return patientSummaries
+  }
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d
 }

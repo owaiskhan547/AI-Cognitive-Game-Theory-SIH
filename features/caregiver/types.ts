@@ -1,4 +1,5 @@
 import type { Database } from '@/types/database.types'
+<<<<<<< HEAD
 export type CaregiverRow = Database['public']['Tables']['caregivers']['Row']
 export type CaregiverPatientRow = Database['public']['Tables']['caregiver_patients']['Row']
 export type GameScoreRow = Database['public']['Tables']['game_scores']['Row']
@@ -14,3 +15,18 @@ export interface Reminder { id: string; patientId: string; title: string; descri
 export interface ReminderFormData { title: string; description: string; date: string; time: string; type: ReminderType }
 export interface ProgressSummary extends CaregiverStats { trend: ProgressPoint[]; byGameType: GameScoreSummary[]; byDifficulty: GameScoreSummary[]; recentScores: GameScoreRow[] }
 export interface ProgressReport { period: 'weekly' | 'monthly'; stats: CaregiverStats; reminderCount: number; activities: CaregiverActivity[] }
+=======
+
+export type CaregiverRow = Database['public']['Tables']['caregivers']['Row']
+export type CaregiverPatientRow = Database['public']['Tables']['caregiver_patients']['Row']
+
+export interface AssignedPatientSummary {
+  patientId: string
+  fullName: string
+  dob: string | null
+  avatarUrl: string | null
+  relationship: string | null
+  emergencyContact: string | null
+  medicalNotes: string | null
+}
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d

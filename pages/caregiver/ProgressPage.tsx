@@ -1,2 +1,41 @@
+<<<<<<< HEAD
 import { useEffect, useState } from 'react'; import { PageHeader } from '@/components/shared/page-header'; import { Button } from '@/components/ui/button'; import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'; import { Skeleton } from '@/components/ui/skeleton'; import { PatientSelector } from '@/components/caregiver/patient-selector'; import { ProgressChart } from '@/components/caregiver/progress-chart'; import { useCaregiverPatients } from '@/features/caregiver/context'; import { CaregiverRepository } from '@/features/caregiver/repository'; import type { DateRange, ProgressSummary } from '@/features/caregiver/types'
 export default function CaregiverProgressPage() { const { selectedPatient } = useCaregiverPatients(); const [range, setRange] = useState<DateRange>(30); const [data, setData] = useState<ProgressSummary | null>(null); const [error, setError] = useState<string | null>(null); useEffect(() => { if (!selectedPatient) return; setData(null); CaregiverRepository.getProgressSummary(selectedPatient.patientId, range).then(setData).catch((e) => { console.error(e); setError('Unable to load progress data. Please try again.') }) }, [selectedPatient?.patientId, range]); if (!selectedPatient) return <p className="text-muted-foreground">No patients assigned yet.</p>; if (error) return <p className="text-destructive">{error}</p>; if (!data) return <Skeleton className="h-96 w-full"/>; const metric = (label: string, value: string | number | null) => <Card key={label}><CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">{label}</CardTitle></CardHeader><CardContent className="text-2xl font-bold">{value ?? 'Not enough data'}</CardContent></Card>; return <div className="space-y-6"><div className="flex flex-col gap-4 sm:flex-row sm:justify-between"><PageHeader title="Patient Progress" subtitle="Cognitive performance based on recorded game scores"/><PatientSelector/></div><div className="flex gap-2">{([7,30,90] as DateRange[]).map((days) => <Button key={days} variant={range === days ? 'default' : 'outline'} onClick={() => setRange(days)}>{days} days</Button>)}</div><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{metric('Average score', data.averageScore)}{metric('Best score', data.bestScore)}{metric('Total games', data.gamesPlayed)}{metric('Average duration', data.averageDurationSeconds ? `${data.averageDurationSeconds}s` : null)}</div><ProgressChart data={data.trend}/><div className="grid gap-4 lg:grid-cols-2">{['Game performance', 'Performance by difficulty'].map((title, index) => <Card key={title}><CardHeader><CardTitle>{title}</CardTitle></CardHeader><CardContent className="space-y-2">{(index ? data.byDifficulty : data.byGameType).length ? (index ? data.byDifficulty : data.byGameType).map((item) => <div key={item.gameType || item.difficulty} className="flex justify-between border-b pb-2 text-sm"><span className="capitalize">{(item.gameType || item.difficulty).replaceAll('_',' ')}</span><span>{item.averageScore} average · {item.gamesPlayed} games</span></div>) : <p className="text-sm text-muted-foreground">No cognitive activity recorded yet.</p>}</CardContent></Card>)}</div><Card><CardHeader><CardTitle>Recent game sessions</CardTitle></CardHeader><CardContent className="space-y-2">{data.recentScores.length ? data.recentScores.map((score) => <div key={score.id} className="flex justify-between border-b pb-2 text-sm"><span className="capitalize">{score.game_type.replaceAll('_',' ')} · {score.difficulty}</span><span>{score.score} · {score.duration_seconds}s</span></div>) : <p className="text-muted-foreground">No cognitive activity recorded yet.</p>}</CardContent></Card></div> }
+=======
+import { PageHeader } from "@/components/shared/page-header";
+import { ProgressChart } from "@/components/caregiver/progress-chart";
+import { mockProgressData } from "@/lib/mock-data";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+export default function CaregiverProgressPage() {
+  return (
+    <div className="space-y-6">
+      <PageHeader title="Cognitive Progress" subtitle="Track cognitive performance over time" />
+      <div className="w-full">
+        <ProgressChart />
+      </div>
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+        {mockProgressData.map((data) => (
+          <Card key={data.week}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg">{data.week}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col space-y-1">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Score</span>
+                  <span className="font-bold">{data.score}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Games Played</span>
+                  <span className="font-medium">{data.gamesPlayed}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d
