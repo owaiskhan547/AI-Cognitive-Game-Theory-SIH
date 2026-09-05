@@ -56,7 +56,16 @@ export function AddMemoryModal({ onMemoryAdded, patientId }: AddMemoryModalProps
       let mediaUrl: string | null = null
 
       if (file) {
-        mediaUrl = await memoryService.uploadMemoryImage(file, targetPatientId)
+        try {
+          mediaUrl = await memoryService.uploadMemoryImage(file, targetPatientId)
+        } catch (uploadErr) {
+          console.warn('Storage bucket upload failed, using local Data URL fallback:', uploadErr)
+          mediaUrl = await new Promise<string>((resolve) => {
+            const reader = new FileReader()
+            reader.onloadend = () => resolve(reader.result as string)
+            reader.readAsDataURL(file)
+          })
+        }
       }
 
       await memoryService.createMemory({
@@ -117,15 +126,19 @@ export function AddMemoryModal({ onMemoryAdded, patientId }: AddMemoryModalProps
           </div>
 
           <div className="space-y-2">
-            <Label>Memory Photo</Label>
+            <Label>Memory Photo or Short Video</Label>
             {previewUrl ? (
-              <div className="relative rounded-lg overflow-hidden border border-border h-40 bg-muted flex items-center justify-center">
-                <img src={previewUrl} alt="Preview" className="object-cover w-full h-full" />
+              <div className="relative rounded-lg overflow-hidden border border-border h-44 bg-muted flex items-center justify-center">
+                {file?.type.startsWith('video/') ? (
+                  <video src={previewUrl} controls className="object-cover w-full h-full" />
+                ) : (
+                  <img src={previewUrl} alt="Preview" className="object-cover w-full h-full" />
+                )}
                 <Button
                   type="button"
                   variant="destructive"
                   size="sm"
-                  className="absolute top-2 right-2"
+                  className="absolute top-2 right-2 z-10"
                   onClick={() => {
                     setFile(null)
                     setPreviewUrl(null)
@@ -137,8 +150,9 @@ export function AddMemoryModal({ onMemoryAdded, patientId }: AddMemoryModalProps
             ) : (
               <label className="border-2 border-dashed border-border rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-accent/50 transition">
                 <Upload className="w-8 h-8 text-muted-foreground mb-2" />
-                <span className="text-sm font-medium text-muted-foreground">Click to upload photo</span>
-                <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+                <span className="text-sm font-medium text-muted-foreground">Click to upload photo or short video</span>
+                <span className="text-xs text-muted-foreground mt-1">Supports JPG, PNG, MP4, WebM</span>
+                <input type="file" accept="image/*,video/*" className="hidden" onChange={handleFileChange} />
               </label>
             )}
           </div>
