@@ -60,3 +60,9 @@ export interface AssistantResponse {
 	requiresHumanAttention?: boolean
 	spokenText?: string
 }
+
+export interface VoiceAssistantResponse {
+	transcript: string
+	response: string
+	audio: Blob
+}

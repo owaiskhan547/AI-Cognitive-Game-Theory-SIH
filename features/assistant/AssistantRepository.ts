@@ -1,8 +1,10 @@
 import { ConversationManager } from './conversation'
+import { deepgramService } from './deepgram'
 import { geminiService } from './gemini'
 import { mockPatientContext } from './mockPatientContext'
 import { SYSTEM_PROMPT } from './prompt'
 import { buildPrompt } from './promptBuilder'
+import type { VoiceAssistantResponse } from './types'
 
 /**
  * Orchestrates conversation management and AI response generation.
@@ -41,6 +43,18 @@ export class AssistantRepository {
     } catch (error) {
       console.error('AssistantRepository sendMessage error:', error)
       throw new Error('Unable to process AI request.')
+    }
+  }
+
+  public async sendVoiceMessage(audio: Blob): Promise<VoiceAssistantResponse> {
+    const transcript = await deepgramService.speechToText(audio)
+    const aiResponse = await this.sendMessage(transcript)
+    const generatedAudio = await deepgramService.textToSpeech(aiResponse)
+
+    return {
+      transcript,
+      response: aiResponse,
+      audio: generatedAudio,
     }
   }
 }
