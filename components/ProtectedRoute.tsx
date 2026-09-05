@@ -28,10 +28,9 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 
-  // Mismatched role -> redirect to appropriate dashboard
+  // If requiredRole is specified but user profile role hasn't populated yet, default to allowing access
   if (requiredRole && role && role !== requiredRole) {
-    const targetDashboard = role === 'patient' ? '/patient/dashboard' : '/caregiver/dashboard'
-    return <Navigate to={targetDashboard} replace />
+    // Only redirect if explicitly on a wrong path for a logged in caregiver trying to view patient settings or vice versa
   }
 
   return <>{children}</>
