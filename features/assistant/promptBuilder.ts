@@ -1,7 +1,48 @@
+import type { PatientContext } from './types'
+
 export interface HistoryMessage {
   sender?: string
   role?: string
   content: string
+}
+
+function formatPatientContext(patientContext: string | PatientContext | null | undefined): string | null {
+  if (!patientContext) return null
+  if (typeof patientContext === 'string') return patientContext
+
+  const activeMedications = patientContext.medications
+    .filter((medication) => medication.isActive)
+    .map(
+      (medication) =>
+        `- ${medication.name}, ${medication.dosage}, ${medication.frequency}${medication.instructions ? ` (${medication.instructions})` : ''}`
+    )
+    .join('\n') || '- None listed'
+
+  const upcomingSchedule = patientContext.schedule
+    .map(
+      (item) =>
+        `- ${item.date} at ${item.time}: ${item.title}${item.description ? ` (${item.description})` : ''}`
+    )
+    .join('\n') || '- None listed'
+
+  const familyMembers = patientContext.familyMembers
+    .map(
+      (member) =>
+        `- ${member.name} (${member.relationship})${member.phone ? `, ${member.phone}` : ''}`
+    )
+    .join('\n') || '- None listed'
+
+  return [
+    `Name: ${patientContext.name}`,
+    `Date of Birth: ${patientContext.dateOfBirth ?? 'Not provided'}`,
+    `Preferred Language: ${patientContext.preferredLanguage ?? 'Not provided'}`,
+    `Medical Notes: ${patientContext.medicalNotes ?? 'Not provided'}`,
+    `Caregiver Name: ${patientContext.caregiverName ?? 'Not provided'}`,
+    `Caregiver Phone: ${patientContext.caregiverPhone ?? 'Not provided'}`,
+    `Active Medications:\n${activeMedications}`,
+    `Upcoming Schedule:\n${upcomingSchedule}`,
+    `Family Members:\n${familyMembers}`,
+  ].join('\n')
 }
 
 /**
@@ -15,7 +56,7 @@ export interface HistoryMessage {
  */
 export function buildPrompt(
   systemPrompt: string,
-  patientContext: string | null | undefined,
+  patientContext: string | PatientContext | null | undefined,
   conversationHistory: HistoryMessage[],
   userMessage: string
 ): string {
@@ -25,8 +66,9 @@ export function buildPrompt(
   parts.push(`[System Instructions]\n${systemPrompt.trim()}`)
 
   // 2. Patient Context (optional)
-  if (patientContext && patientContext.trim()) {
-    parts.push(`[Patient Context]\n${patientContext.trim()}`)
+  const formattedPatientContext = formatPatientContext(patientContext)
+  if (formattedPatientContext) {
+    parts.push(`[Patient Context]\n${formattedPatientContext}`)
   }
 
   // 3. Last 6 messages from history

@@ -1,5 +1,6 @@
 import { ConversationManager } from './conversation'
 import { geminiService } from './gemini'
+import { mockPatientContext } from './mockPatientContext'
 import { SYSTEM_PROMPT } from './prompt'
 import { buildPrompt } from './promptBuilder'
 
@@ -24,7 +25,7 @@ export class AssistantRepository {
       // 3. Build the prompt
       const prompt = buildPrompt(
         SYSTEM_PROMPT,
-        null,
+        mockPatientContext,
         recentConversation,
         userMessage
       )
