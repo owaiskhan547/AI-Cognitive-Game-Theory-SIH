@@ -4,16 +4,14 @@ import { DeepgramClient } from '@deepgram/sdk'
  * Service class for interacting with Deepgram Voice AI (STT & TTS).
  */
 export class DeepgramService {
-  private client: DeepgramClient
+  private client: DeepgramClient | null = null
 
   constructor() {
     const key = import.meta.env.VITE_DEEPGRAM_API_KEY
 
-    if (!key || typeof key !== 'string' || key.trim() === '') {
-      throw new Error('Missing Deepgram API Key: Please define VITE_DEEPGRAM_API_KEY in your .env.local file.')
+    if (key && typeof key === 'string' && key.trim() !== '') {
+      this.client = new DeepgramClient({ apiKey: key.trim() })
     }
-
-    this.client = new DeepgramClient({ apiKey: key.trim() })
   }
 
   /**
@@ -25,6 +23,9 @@ export class DeepgramService {
   async speechToText(audio: Blob): Promise<string> {
     if (!audio || audio.size === 0) {
       throw new Error('Audio data cannot be empty.')
+    }
+    if (!this.client) {
+      throw new Error('Missing Deepgram API Key: Please define VITE_DEEPGRAM_API_KEY in your .env.local file.')
     }
 
     try {
@@ -53,6 +54,9 @@ export class DeepgramService {
   async textToSpeech(text: string): Promise<Blob> {
     if (!text || text.trim() === '') {
       throw new Error('Text to synthesize cannot be empty.')
+    }
+    if (!this.client) {
+      throw new Error('Missing Deepgram API Key: Please define VITE_DEEPGRAM_API_KEY in your .env.local file.')
     }
 
     try {

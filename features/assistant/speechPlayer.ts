@@ -10,15 +10,13 @@ export class SpeechPlayer {
 
 		await new Promise<void>((resolve, reject) => {
 			const cleanup = (): void => {
-				if (this.currentObjectUrl === objectUrl) {
-					URL.revokeObjectURL(objectUrl)
-					this.currentObjectUrl = null
-				}
+				if (this.currentObjectUrl !== objectUrl) return
+
+				URL.revokeObjectURL(objectUrl)
+				this.currentObjectUrl = null
 				this.audio.onended = null
 				this.audio.onerror = null
-				if (this.playbackReject === reject) {
-					this.playbackReject = null
-				}
+				this.playbackReject = null
 			}
 
 			this.audio.onended = () => {
@@ -48,9 +46,9 @@ export class SpeechPlayer {
 		this.audio.currentTime = 0
 		this.audio.src = ''
 		if (this.currentObjectUrl) {
-            URL.revokeObjectURL(this.currentObjectUrl)
-            this.currentObjectUrl = null
-        }
+			URL.revokeObjectURL(this.currentObjectUrl)
+			this.currentObjectUrl = null
+		}
 	}
 }
 

@@ -32,6 +32,8 @@ export default function PatientAssistantPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const isStartingRecordingRef = useRef(false)
+  const isStoppingRecordingRef = useRef(false)
 
   // Auto-scroll to the newest message smoothly
   const scrollToBottom = () => {
@@ -108,6 +110,9 @@ export default function PatientAssistantPage() {
   }
 
   const startRecording = async () => {
+    if (isRecording || isLoading || isStartingRecordingRef.current) return
+
+    isStartingRecordingRef.current = true
     try {
       setErrorMessage(null)
       await voiceRecorder.requestPermission()
@@ -116,15 +121,21 @@ export default function PatientAssistantPage() {
     } catch (error) {
       console.error("Failed to start recording:", error)
       setErrorMessage("I couldn't access the microphone right now. Please try again.")
+    } finally {
+      isStartingRecordingRef.current = false
     }
   }
 
   const stopRecording = async () => {
+  if (!isRecording || isLoading || isStoppingRecordingRef.current) return
+
+  isStoppingRecordingRef.current = true
+  setIsLoading(true)
+
   try {
     const recordedAudio = await voiceRecorder.stopRecording()
 
     setIsRecording(false)
-    setIsLoading(true)
     setErrorMessage(null)
 
     const result = await assistantRepository.sendVoiceMessage(recordedAudio)
@@ -180,6 +191,7 @@ export default function PatientAssistantPage() {
   } finally {
     setIsRecording(false)
     setIsLoading(false)
+    isStoppingRecordingRef.current = false
     voiceRecorder.cleanup()
   }
 }
