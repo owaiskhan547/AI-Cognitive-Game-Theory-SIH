@@ -2,8 +2,10 @@ import { useState, useRef, useEffect } from "react"
 import { PageHeader } from "@/components/shared/page-header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Brain, Send, User, Loader2, AlertCircle } from "lucide-react"
+import { Brain, Send, User, Loader2, AlertCircle, Mic, Square } from "lucide-react"
 import { assistantRepository } from "@/features/assistant/AssistantRepository"
+import { voiceRecorder } from "@/features/assistant/voiceRecorder"
+import { speechPlayer } from "@/features/assistant/speechPlayer"
 
 interface Message {
   id: string
@@ -26,6 +28,7 @@ export default function PatientAssistantPage() {
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES)
   const [inputText, setInputText] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [isRecording, setIsRecording] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -45,6 +48,13 @@ export default function PatientAssistantPage() {
       inputRef.current?.focus()
     }
   }, [isLoading])
+
+  useEffect(() => {
+    return () => {
+      voiceRecorder.cleanup()
+      speechPlayer.stop()
+    }
+  }, [])
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -93,9 +103,86 @@ export default function PatientAssistantPage() {
       }
       setMessages((prev) => [...prev, errorMsg])
     } finally {
-      setIsLoading(false)
+        setIsLoading(false)
+      }
+  }
+
+  const startRecording = async () => {
+    try {
+      setErrorMessage(null)
+      await voiceRecorder.requestPermission()
+      voiceRecorder.startRecording()
+      setIsRecording(true)
+    } catch (error) {
+      console.error("Failed to start recording:", error)
+      setErrorMessage("I couldn't access the microphone right now. Please try again.")
     }
   }
+
+  const stopRecording = async () => {
+  try {
+    const recordedAudio = await voiceRecorder.stopRecording()
+
+    setIsRecording(false)
+    setIsLoading(true)
+    setErrorMessage(null)
+
+    const result = await assistantRepository.sendVoiceMessage(recordedAudio)
+
+    const timeString = new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+
+    const userMsg: Message = {
+      id: `${Date.now()}-user-voice`,
+      role: "user",
+      content: result.transcript,
+      time: timeString,
+    }
+
+    const assistantMsg: Message = {
+      id: `${Date.now()}-assistant-voice`,
+      role: "assistant",
+      content: result.response,
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    }
+
+    setMessages((prev) => [...prev, userMsg, assistantMsg])
+
+    // Play the AI voice without blocking the UI
+    speechPlayer.play(result.audio).catch((error) => {
+  console.error("Speech playback failed:", error)
+})
+  } catch (error) {
+    console.error("Failed to process voice message:", error)
+
+    const friendlyError =
+      "I'm having trouble processing your voice right now. Please try again."
+
+    setErrorMessage(friendlyError)
+
+    const errorMsg: Message = {
+      id: `${Date.now()}-voice-error`,
+      role: "assistant",
+      content: friendlyError,
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      isError: true,
+    }
+
+    setMessages((prev) => [...prev, errorMsg])
+  } finally {
+    setIsRecording(false)
+    setIsLoading(false)
+    voiceRecorder.cleanup()
+  }
+}
 
   return (
     <div className="flex flex-col h-[calc(100dvh-120px)] sm:h-[calc(100vh-140px)] max-w-3xl mx-auto space-y-3 px-2 sm:px-4">
@@ -170,7 +257,11 @@ export default function PatientAssistantPage() {
 
         <div ref={messagesEndRef} />
       </div>
-
+        {errorMessage && (
+  <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+    {errorMessage}
+  </div>
+)}
       {/* Input & Send Form */}
       <form onSubmit={handleSend} className="flex items-center gap-2 pt-1 pb-1">
         <Input
@@ -182,6 +273,16 @@ export default function PatientAssistantPage() {
           disabled={isLoading}
           className="h-12 text-base rounded-xl bg-card border-border/60 focus-visible:ring-primary px-4 transition-opacity disabled:opacity-60"
         />
+        <Button
+          type="button"
+          size="lg"
+          onClick={isRecording ? stopRecording : startRecording}
+          disabled={isLoading}
+          aria-label={isRecording ? "Stop recording" : "Start recording"}
+          className="h-12 w-12 p-0 rounded-xl shrink-0"
+        >
+          {isRecording ? <Square className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+        </Button>
         <Button
           type="submit"
           size="lg"

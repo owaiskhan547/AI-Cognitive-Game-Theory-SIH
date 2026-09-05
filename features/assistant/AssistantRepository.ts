@@ -47,14 +47,34 @@ export class AssistantRepository {
   }
 
   public async sendVoiceMessage(audio: Blob): Promise<VoiceAssistantResponse> {
-    const transcript = await deepgramService.speechToText(audio)
-    const aiResponse = await this.sendMessage(transcript)
-    const generatedAudio = await deepgramService.textToSpeech(aiResponse)
+    try {
+      const transcript = await deepgramService.speechToText(audio)
 
-    return {
-      transcript,
-      response: aiResponse,
-      audio: generatedAudio,
+      if (!transcript.trim()) {
+        throw new Error('Speech could not be recognized.')
+      }
+
+      this.conversationManager.addUserMessage(transcript)
+      const recentConversation = this.conversationManager.getRecentConversation()
+      const prompt = buildPrompt(
+        SYSTEM_PROMPT,
+        mockPatientContext,
+        recentConversation,
+        transcript
+      )
+
+      const response = await this.geminiService.generateResponse(prompt)
+      this.conversationManager.addAssistantMessage(response)
+      const audioBlob = await deepgramService.textToSpeech(response)
+
+      return {
+        transcript,
+        response,
+        audio: audioBlob,
+      }
+    } catch (error) {
+      console.error("AssistantRepository sendVoiceMessage error:", error)
+      throw new Error("Unable to process voice request.")
     }
   }
 }
