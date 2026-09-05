@@ -1,10 +1,10 @@
 import { supabase } from '@/lib/supabase/client'
-import type {
-  AssistantConversationRow,
-  AssistantConversationInsert,
-  AssistantMessageRow,
-  AssistantMessageInsert,
-} from './types'
+import type { Database } from '@/types/database.types'
+
+type AssistantConversationRow = Database['public']['Tables']['assistant_conversations']['Row']
+type AssistantConversationInsert = Database['public']['Tables']['assistant_conversations']['Insert']
+type AssistantMessageRow = Database['public']['Tables']['assistant_messages']['Row']
+type AssistantMessageInsert = Database['public']['Tables']['assistant_messages']['Insert']
 
 export class AssistantRepository {
   static async getConversationsByPatientId(patientId: string): Promise<AssistantConversationRow[]> {
