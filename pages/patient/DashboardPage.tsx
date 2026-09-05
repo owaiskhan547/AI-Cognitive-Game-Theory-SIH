@@ -5,12 +5,16 @@ import { GameCard } from "@/components/patient/game-card"
 import { MemoryCard } from "@/components/patient/memory-card"
 import { AssistantCard } from "@/components/patient/assistant-card"
 import { SosButton } from "@/components/patient/sos-button"
+import { useAuth } from "@/contexts/AuthContext"
 import { mockPatient } from "@/lib/mock-data"
 
 export default function PatientDashboardPage() {
+  const { profile, user } = useAuth()
+  const userName = profile?.full_name || user?.user_metadata?.full_name || mockPatient.name.split(' ')[0]
+
   return (
     <div className="flex flex-col gap-8 pb-8">
-      <GreetingCard name={mockPatient.name.split(' ')[0]} />
+      <GreetingCard name={userName.split(' ')[0]} />
       
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div className="space-y-6">
