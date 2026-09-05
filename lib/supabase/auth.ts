@@ -1,4 +1,4 @@
-import { supabase } from './client'
+import { assertSupabaseConfigured, supabase } from './client'
 import type { UserRole } from '@/types/database.types'
 
 export interface SignUpParams {
@@ -23,6 +23,8 @@ export async function signUp({
   dob,
   avatarUrl,
 }: SignUpParams) {
+  assertSupabaseConfigured()
+
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -45,6 +47,8 @@ export async function signUp({
  * Sign in an existing user with email and password.
  */
 export async function signIn(email: string, password: string) {
+  assertSupabaseConfigured()
+
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
@@ -58,6 +62,8 @@ export async function signIn(email: string, password: string) {
  * Sign in or sign up with Google OAuth.
  */
 export async function signInWithGoogle(role?: UserRole) {
+  assertSupabaseConfigured()
+
   if (role && typeof window !== 'undefined') {
     localStorage.setItem('smriti_pending_oauth_role', role)
   }
@@ -83,6 +89,8 @@ export async function signInWithGoogle(role?: UserRole) {
  * Sign out the current user session.
  */
 export async function signOut() {
+  assertSupabaseConfigured()
+
   const { error } = await supabase.auth.signOut()
   if (error) throw error
 }
@@ -91,6 +99,8 @@ export async function signOut() {
  * Get the currently authenticated user session.
  */
 export async function getCurrentUser() {
+  assertSupabaseConfigured()
+
   const {
     data: { user },
     error,

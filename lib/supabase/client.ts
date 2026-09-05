@@ -12,6 +12,26 @@ const supabaseAnonKey =
   (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_SUPABASE_ANON_KEY) ||
   ''
 
+const placeholderValues = [
+  'placeholder-project.supabase.co',
+  'your-project-id.supabase.co',
+  'placeholder-anon-key',
+  'your-supabase-anon-key-here',
+]
+
+export const isSupabaseConfigured =
+  Boolean(supabaseUrl) &&
+  Boolean(supabaseAnonKey) &&
+  !placeholderValues.some((value) => supabaseUrl.includes(value) || supabaseAnonKey.includes(value))
+
+export function assertSupabaseConfigured() {
+  if (!isSupabaseConfigured) {
+    throw new Error(
+      'Supabase is not configured. Add your VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY values to a .env file before logging in.'
+    )
+  }
+}
+
 /**
  * Standard pure React client-side Supabase client with typed schema and persistent localStorage auth.
  */

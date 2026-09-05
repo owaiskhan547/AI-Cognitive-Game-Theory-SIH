@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom"
-import { Home, Gamepad2, Pill, Images, Phone, Brain, User } from "lucide-react"
+import { Home, Pill, Images, Phone, Brain, User, CalendarDays } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export function PatientNav() {
@@ -8,7 +8,7 @@ export function PatientNav() {
 
   const navItems = [
     { name: "Home", href: "/patient/dashboard", icon: Home },
-    { name: "Games", href: "/patient/games", icon: Gamepad2 },
+    { name: "Schedule", href: "/patient/schedule", icon: CalendarDays },
     { name: "Meds", href: "/patient/medications", icon: Pill },
     { name: "Memories", href: "/patient/memories", icon: Images },
     { name: "SOS", href: "/patient/emergency", icon: Phone, destructive: true },

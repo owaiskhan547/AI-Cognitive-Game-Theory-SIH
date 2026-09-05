@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useAuth } from "@/contexts/AuthContext"
+import { isSupabaseConfigured, supabase } from "@/lib/supabase/client"
 
 function GoogleIcon() {
   return (
@@ -58,15 +59,34 @@ export default function LoginPage() {
     setErrorMsg("")
 
     try {
-      await signIn(email, password)
-      if (role === "patient") {
-        navigate("/patient/dashboard")
-      } else {
+      const data = await signIn(email.trim(), password)
+      const signedInUser = data?.user
+      let resolvedRole = role
+      if (signedInUser) {
+        // Resolve profile from database to ensure correct role
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", signedInUser.id)
+          .maybeSingle()
+        if (prof?.role) {
+          resolvedRole = prof.role
+        }
+      }
+
+      if (resolvedRole === "caregiver") {
         navigate("/caregiver/dashboard")
+      } else {
+        navigate("/patient/dashboard")
       }
     } catch (error: any) {
       console.error("Login failed:", error)
-      setErrorMsg(error?.message || "Login failed. Please check your credentials.")
+      const rawMsg = (error?.message || "").toLowerCase()
+      if (rawMsg.includes("invalid login credentials") || rawMsg.includes("invalid credentials")) {
+        setErrorMsg("Invalid email or password. Please try again.")
+      } else {
+        setErrorMsg(error?.message || "Login failed. Please check your credentials.")
+      }
     } finally {
       setIsLoading(false)
     }
@@ -227,6 +247,14 @@ export default function LoginPage() {
             {errorMsg && (
               <div className="p-3.5 mb-4 text-xs sm:text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl">
                 {errorMsg}
+              </div>
+            )}
+
+            {!isSupabaseConfigured && (
+              <div className="mb-4 rounded-xl border border-lime-500/30 bg-lime-500/10 p-3 text-xs text-lime-200">
+                <p className="font-semibold mb-1">Demo accounts</p>
+                <p>Patient: patient@demo.local / demo1234</p>
+                <p>Caregiver: caregiver@demo.local / demo1234</p>
               </div>
             )}
 
