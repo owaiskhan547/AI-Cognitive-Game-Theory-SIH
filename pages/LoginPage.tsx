@@ -6,7 +6,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useAuth } from "@/contexts/AuthContext"
+<<<<<<< HEAD
+=======
 import { isSupabaseConfigured, supabase } from "@/lib/supabase/client"
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d
 
 function GoogleIcon() {
   return (
@@ -59,6 +62,17 @@ export default function LoginPage() {
     setErrorMsg("")
 
     try {
+<<<<<<< HEAD
+      await signIn(email, password)
+      if (role === "patient") {
+        navigate("/patient/dashboard")
+      } else {
+        navigate("/caregiver/dashboard")
+      }
+    } catch (error: any) {
+      console.error("Login failed:", error)
+      setErrorMsg(error?.message || "Login failed. Please check your credentials.")
+=======
       const data = await signIn(email.trim(), password)
       const signedInUser = data?.user
       let resolvedRole = role
@@ -87,6 +101,7 @@ export default function LoginPage() {
       } else {
         setErrorMsg(error?.message || "Login failed. Please check your credentials.")
       }
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d
     } finally {
       setIsLoading(false)
     }
@@ -250,6 +265,8 @@ export default function LoginPage() {
               </div>
             )}
 
+<<<<<<< HEAD
+=======
             {!isSupabaseConfigured && (
               <div className="mb-4 rounded-xl border border-lime-500/30 bg-lime-500/10 p-3 text-xs text-lime-200">
                 <p className="font-semibold mb-1">Demo accounts</p>
@@ -258,6 +275,7 @@ export default function LoginPage() {
               </div>
             )}
 
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1.5">

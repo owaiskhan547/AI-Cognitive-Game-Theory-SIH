@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+export function AdherenceCard({ activeMedications }: { activeMedications: number }) { return <Card><CardHeader><CardTitle>Medication Status</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{activeMedications}</p><p className="text-sm text-muted-foreground">active medications</p><p className="mt-3 text-sm text-muted-foreground">Adherence is not calculated because the current schema has no completion history.</p></CardContent></Card> }
+=======
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -35,3 +39,4 @@ export function AdherenceCard() {
     </Card>
   );
 }
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d

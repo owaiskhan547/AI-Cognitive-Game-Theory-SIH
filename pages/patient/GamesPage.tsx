@@ -1,3 +1,46 @@
+<<<<<<< HEAD
+import { PageHeader } from "@/components/shared/page-header"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { mockGames } from "@/lib/mock-data"
+import { Brain } from "lucide-react"
+
+export default function PatientGamesPage() {
+  return (
+    <div className="space-y-6">
+      <PageHeader 
+        title="Brain Games" 
+        subtitle="Keep your mind active and engaged"
+        backHref="/patient/dashboard"
+      />
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        {mockGames.map((game) => (
+          <Card key={game.id} className="flex flex-col">
+            <CardHeader>
+              <div className="flex justify-between items-start">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                  <Brain className="w-6 h-6 text-primary" />
+                </div>
+                <Badge variant="secondary" className="text-sm">
+                  {game.difficulty}
+                </Badge>
+              </div>
+              <CardTitle className="text-xl font-bold">{game.name}</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 flex flex-col justify-between gap-6">
+              <p className="text-lg text-muted-foreground">
+                {game.description}
+              </p>
+              <Button size="xl" className="w-full rounded-xl text-lg h-16">
+                Play Now
+              </Button>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+=======
 import { useState } from 'react'
 import { PageHeader } from '@/components/shared/page-header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -47,6 +90,7 @@ export default function PatientGamesPage() {
         {lastResult && <Card className="border-primary/30"><CardHeader><CardTitle>{lastResult.correctAnswers === lastResult.totalAnswers ? 'Congratulations!' : 'Game complete'}</CardTitle></CardHeader><CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-lg font-medium">{resultMessage}</p><p className="mt-1 text-muted-foreground">Your score: <strong>{lastResult.score}%</strong> <span className="ml-3">Time: <strong>{formatGameTime(lastResult.durationSeconds)}</strong></span></p></div><Button variant="outline" onClick={() => setLastResult(null)}>Dismiss</Button></CardContent></Card>}
         <GamesHome difficulty={difficulty} onDifficultyChange={setDifficulty} onSelectGame={setActiveGame} />
       </> : lastResult ? <Card className="border-primary/30"><CardHeader><CardTitle className="text-2xl">{lastResult.correctAnswers === lastResult.totalAnswers ? 'Congratulations!' : 'Game complete'}</CardTitle></CardHeader><CardContent className="space-y-6"><div><p className="text-xl font-medium">{resultMessage}</p><div className="mt-2 flex flex-wrap gap-x-6 gap-y-2 text-lg text-muted-foreground"><span>Score: <strong className="text-foreground">{lastResult.score}%</strong></span><span>Time: <strong className="text-foreground">{formatGameTime(lastResult.durationSeconds)}</strong></span><span>Correct: <strong className="text-foreground">{lastResult.correctAnswers}/{lastResult.totalAnswers}</strong></span></div></div><div className="flex flex-col gap-3 sm:flex-row"><Button size="xl" onClick={() => setLastResult(null)}>Play again</Button><Button size="xl" variant="outline" onClick={() => { setLastResult(null); setActiveGame(null) }}>Back to games</Button></div></CardContent></Card> : activeGame === 'memory_match' ? <MemoryMatch {...gameProps} /> : activeGame === 'sequence_recall' ? <SequenceRecall {...gameProps} /> : activeGame === 'pattern_recall' ? <PatternRecall {...gameProps} /> : <WordRecall {...gameProps} />}
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d
     </div>
   )
 }

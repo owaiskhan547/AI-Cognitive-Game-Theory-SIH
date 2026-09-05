@@ -13,11 +13,21 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { Brain, LayoutDashboard, TrendingUp, Bell, FileText, User, LogOut } from "lucide-react";
+<<<<<<< HEAD
+import { useAuth } from "@/contexts/AuthContext";
+import { useCaregiverPatients } from "@/features/caregiver/context";
+=======
 import { mockPatient } from "@/lib/mock-data";
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 
 export function CaregiverSidebar() {
+<<<<<<< HEAD
+  const { profile, signOut } = useAuth();
+  const { selectedPatient } = useCaregiverPatients();
+=======
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d
   const location = useLocation();
   const pathname = location.pathname;
 
@@ -66,7 +76,11 @@ export function CaregiverSidebar() {
                 <SidebarMenuButton asChild isActive={pathname === "/caregiver/dashboard"}>
                   <Link to="/caregiver/dashboard">
                     <User />
+<<<<<<< HEAD
+                    <span>{selectedPatient?.fullName ?? 'No patient selected'}</span>
+=======
                     <span>{mockPatient.name}</span>
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -79,6 +93,17 @@ export function CaregiverSidebar() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
+<<<<<<< HEAD
+              <AvatarImage src={profile?.avatar_url ?? undefined} alt="Caregiver" />
+              <AvatarFallback>{profile?.full_name?.[0] ?? 'C'}</AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col">
+              <span className="text-sm font-medium">{profile?.full_name ?? 'Caregiver'}</span>
+              <span className="text-xs text-muted-foreground">Caregiver</span>
+            </div>
+          </div>
+          <Button variant="ghost" size="icon" onClick={() => void signOut()} asChild>
+=======
               <AvatarImage src="" alt="Caregiver" />
               <AvatarFallback>PK</AvatarFallback>
             </Avatar>
@@ -88,6 +113,7 @@ export function CaregiverSidebar() {
             </div>
           </div>
           <Button variant="ghost" size="icon" asChild>
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d
             <Link to="/" title="Log Out">
               <LogOut className="h-4 w-4" />
             </Link>

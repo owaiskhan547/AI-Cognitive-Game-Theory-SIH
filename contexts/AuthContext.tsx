@@ -1,6 +1,10 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import type { User, Session } from '@supabase/supabase-js'
+<<<<<<< HEAD
+import { supabase } from '@/lib/supabase/client'
+=======
 import { isSupabaseConfigured, supabase } from '@/lib/supabase/client'
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d
 import {
   signIn as authSignIn,
   signUp as authSignUp,
@@ -10,6 +14,8 @@ import {
 } from '@/lib/supabase/auth'
 import type { Database, UserRole } from '@/types/database.types'
 
+<<<<<<< HEAD
+=======
 const DEMO_STORAGE_KEY = 'smriti_demo_session'
 const DEMO_REGISTERED_KEY = 'smriti_demo_registered_account'
 const DEMO_ACCOUNTS = [
@@ -79,6 +85,7 @@ const clearDemoSession = () => {
   window.localStorage.removeItem(DEMO_STORAGE_KEY)
 }
 
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d
 type Profile = Database['public']['Tables']['profiles']['Row']
 
 interface AuthContextType {
@@ -151,6 +158,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
+<<<<<<< HEAD
+=======
     if (!isSupabaseConfigured) {
       const storedDemo = readDemoSession()
 
@@ -173,6 +182,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return
     }
 
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d
     // 1. Initial session check
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       setSession(currentSession)
@@ -205,6 +215,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const handleSignIn = async (email: string, password: string) => {
+<<<<<<< HEAD
+=======
     if (!isSupabaseConfigured) {
       let account = DEMO_ACCOUNTS.find(
         (item) => item.email.toLowerCase() === email.trim().toLowerCase() && item.password === password
@@ -243,6 +255,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { user: demoUser, session: { access_token: 'demo-access-token' } }
     }
 
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d
     const data = await authSignIn(email, password)
     if (data.user) {
       await fetchProfile(data.user)
@@ -251,6 +264,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const handleSignUp = async (params: SignUpParams) => {
+<<<<<<< HEAD
+=======
     if (!isSupabaseConfigured) {
       if (typeof window !== 'undefined') {
         window.localStorage.setItem(DEMO_REGISTERED_KEY, JSON.stringify({
@@ -267,6 +282,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d
     const data = await authSignUp(params)
     if (data.user) {
       await fetchProfile(data.user)
@@ -275,6 +291,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const handleSignInWithGoogle = async (selectedRole?: UserRole) => {
+<<<<<<< HEAD
+=======
     if (!isSupabaseConfigured) {
       const role = selectedRole || 'patient'
       const account = DEMO_ACCOUNTS.find((item) => item.role === role)
@@ -300,10 +318,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { user: demoUser }
     }
 
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d
     return await authSignInWithGoogle(selectedRole)
   }
 
   const handleSignOut = async () => {
+<<<<<<< HEAD
+=======
     if (!isSupabaseConfigured) {
       clearDemoSession()
       setUser(null)
@@ -312,6 +333,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return
     }
 
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d
     await authSignOut()
     setUser(null)
     setSession(null)

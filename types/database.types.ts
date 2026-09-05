@@ -299,6 +299,15 @@ export type Database = {
           },
         ]
       }
+<<<<<<< HEAD
+      game_scores: {
+        Row: { id: string; patient_id: string; game_type: 'memory_match' | 'sequence_recall' | 'pattern_recall' | 'word_recall'; difficulty: 'easy' | 'medium' | 'hard'; score: number; duration_seconds: number; completed_at: string }
+        Insert: { id?: string; patient_id: string; game_type: 'memory_match' | 'sequence_recall' | 'pattern_recall' | 'word_recall'; difficulty: 'easy' | 'medium' | 'hard'; score: number; duration_seconds: number; completed_at?: string }
+        Update: { id?: string; patient_id?: string; game_type?: 'memory_match' | 'sequence_recall' | 'pattern_recall' | 'word_recall'; difficulty?: 'easy' | 'medium' | 'hard'; score?: number; duration_seconds?: number; completed_at?: string }
+        Relationships: [{ foreignKeyName: 'game_scores_patient_id_fkey'; columns: ['patient_id']; isOneToOne: false; referencedRelation: 'patients'; referencedColumns: ['id'] }]
+      }
+=======
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d
       assistant_conversations: {
         Row: {
           id: string

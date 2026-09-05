@@ -1,3 +1,11 @@
+<<<<<<< HEAD
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart'
+import { Line, LineChart, CartesianGrid, XAxis, YAxis } from 'recharts'
+import type { ProgressPoint } from '@/features/caregiver/types'
+const config = { score: { label: 'Average score', color: 'hsl(var(--primary))' }, gamesPlayed: { label: 'Games', color: 'hsl(var(--muted-foreground))' } } satisfies ChartConfig
+export function ProgressChart({ data }: { data: ProgressPoint[] }) { return <Card><CardHeader><CardTitle>Cognitive Progress</CardTitle><CardDescription>Average score and completed games over the selected period.</CardDescription></CardHeader><CardContent>{data.length ? <ChartContainer config={config} className="h-[300px] w-full"><LineChart data={data}><CartesianGrid vertical={false}/><XAxis dataKey="date" tickLine={false} axisLine={false}/><YAxis yAxisId="score"/><YAxis yAxisId="games" orientation="right"/><ChartTooltip content={<ChartTooltipContent/>}/><Line yAxisId="score" type="monotone" dataKey="score" stroke="var(--color-score)" strokeWidth={2}/><Line yAxisId="games" type="monotone" dataKey="gamesPlayed" stroke="var(--color-gamesPlayed)" strokeWidth={2}/></LineChart></ChartContainer> : <p className="py-16 text-center text-sm text-muted-foreground">No cognitive activity recorded yet.</p>}</CardContent></Card> }
+=======
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -34,3 +42,4 @@ export function ProgressChart() {
     </Card>
   );
 }
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d

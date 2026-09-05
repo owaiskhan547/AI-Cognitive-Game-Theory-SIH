@@ -1,3 +1,12 @@
+<<<<<<< HEAD
+import { PageHeader } from "@/components/shared/page-header"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Images, Plus } from "lucide-react"
+import { mockMemories } from "@/lib/mock-data"
+
+export default function PatientMemoriesPage() {
+=======
 import { useEffect, useState } from "react"
 import { PageHeader } from "@/components/shared/page-header"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
@@ -135,6 +144,7 @@ export default function PatientMemoriesPage() {
     setTimeout(() => setStatus(null), 2500)
   }
 
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-start">
@@ -143,12 +153,32 @@ export default function PatientMemoriesPage() {
           subtitle="Cherished moments to revisit"
           backHref="/patient/dashboard"
         />
+<<<<<<< HEAD
+        <Button variant="outline" size="lg" className="rounded-xl hidden sm:flex items-center gap-2">
+=======
         <Button onClick={openNewMemoryForm} variant="outline" size="lg" className="rounded-xl hidden sm:flex items-center gap-2">
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d
           <Plus className="w-5 h-5" />
           Add Memory
         </Button>
       </div>
 
+<<<<<<< HEAD
+      <Button variant="outline" size="xl" className="w-full rounded-xl sm:hidden flex items-center gap-2 mb-6">
+        <Plus className="w-6 h-6" />
+        Add New Memory
+      </Button>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        {mockMemories.map((memory) => (
+          <Card key={memory.id} className="overflow-hidden">
+            <div className="w-full h-48 bg-muted flex items-center justify-center">
+              <Images className="w-12 h-12 text-muted-foreground/30" />
+            </div>
+            <CardHeader>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-sm text-muted-foreground font-medium">{memory.date}</span>
+=======
       {status && (
         <div className="p-3 rounded-xl bg-primary/10 border border-primary/20 text-primary font-medium text-center">{status}</div>
       )}
@@ -203,6 +233,7 @@ export default function PatientMemoriesPage() {
             <CardHeader>
               <div className="flex justify-between items-center mb-1">
                 <span className="text-sm text-muted-foreground font-medium">{new Date(memory.created_at).toLocaleDateString()}</span>
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d
                 <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">Memory</span>
               </div>
               <CardTitle className="text-xl">{memory.title}</CardTitle>
@@ -211,6 +242,8 @@ export default function PatientMemoriesPage() {
               <p className="text-muted-foreground text-lg">
                 {memory.description}
               </p>
+<<<<<<< HEAD
+=======
               <div className="flex gap-2 mt-4">
                 <Button variant="outline" size="sm" className="flex-1" onClick={() => { setEditingMemory(memory); setForm({ title: memory.title, description: memory.description || "", media_url: memory.media_url || null }); setShowForm(true) }}>
                   <Pencil className="w-4 h-4" />
@@ -221,6 +254,7 @@ export default function PatientMemoriesPage() {
                   Delete
                 </Button>
               </div>
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d
             </CardContent>
           </Card>
         ))}

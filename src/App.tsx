@@ -13,6 +13,10 @@ import SignupPage from '@/pages/SignupPage'
 import PatientDashboardPage from '@/pages/patient/DashboardPage'
 import PatientAssistantPage from '@/pages/patient/AssistantPage'
 import PatientEmergencyPage from '@/pages/patient/EmergencyPage'
+<<<<<<< HEAD
+import PatientGamesPage from '@/pages/patient/GamesPage'
+=======
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d
 import PatientMedicationsPage from '@/pages/patient/MedicationsPage'
 import PatientMemoriesPage from '@/pages/patient/MemoriesPage'
 import PatientProfilePage from '@/pages/patient/ProfilePage'
@@ -47,6 +51,10 @@ export function App() {
             <Route path="dashboard" element={<PatientDashboardPage />} />
             <Route path="assistant" element={<PatientAssistantPage />} />
             <Route path="emergency" element={<PatientEmergencyPage />} />
+<<<<<<< HEAD
+            <Route path="games" element={<PatientGamesPage />} />
+=======
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d
             <Route path="medications" element={<PatientMedicationsPage />} />
             <Route path="memories" element={<PatientMemoriesPage />} />
             <Route path="profile" element={<PatientProfilePage />} />

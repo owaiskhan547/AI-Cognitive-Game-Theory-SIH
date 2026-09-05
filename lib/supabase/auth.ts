@@ -1,4 +1,8 @@
+<<<<<<< HEAD
+import { supabase } from './client'
+=======
 import { assertSupabaseConfigured, supabase } from './client'
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d
 import type { UserRole } from '@/types/database.types'
 
 export interface SignUpParams {
@@ -23,8 +27,11 @@ export async function signUp({
   dob,
   avatarUrl,
 }: SignUpParams) {
+<<<<<<< HEAD
+=======
   assertSupabaseConfigured()
 
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -47,8 +54,11 @@ export async function signUp({
  * Sign in an existing user with email and password.
  */
 export async function signIn(email: string, password: string) {
+<<<<<<< HEAD
+=======
   assertSupabaseConfigured()
 
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
@@ -62,8 +72,11 @@ export async function signIn(email: string, password: string) {
  * Sign in or sign up with Google OAuth.
  */
 export async function signInWithGoogle(role?: UserRole) {
+<<<<<<< HEAD
+=======
   assertSupabaseConfigured()
 
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d
   if (role && typeof window !== 'undefined') {
     localStorage.setItem('smriti_pending_oauth_role', role)
   }
@@ -89,8 +102,11 @@ export async function signInWithGoogle(role?: UserRole) {
  * Sign out the current user session.
  */
 export async function signOut() {
+<<<<<<< HEAD
+=======
   assertSupabaseConfigured()
 
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d
   const { error } = await supabase.auth.signOut()
   if (error) throw error
 }
@@ -99,8 +115,11 @@ export async function signOut() {
  * Get the currently authenticated user session.
  */
 export async function getCurrentUser() {
+<<<<<<< HEAD
+=======
   assertSupabaseConfigured()
 
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d
   const {
     data: { user },
     error,

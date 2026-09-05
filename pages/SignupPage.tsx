@@ -65,10 +65,13 @@ export default function SignupPage() {
         fullName: name,
         role,
       })
+<<<<<<< HEAD
+=======
       if (!isSupabaseConfigured) {
         navigate("/login", { replace: true })
         return
       }
+>>>>>>> c803a0274886f346c6bb60935235b314baec755d
       if (role === "patient") {
         navigate("/patient/dashboard")
       } else {
