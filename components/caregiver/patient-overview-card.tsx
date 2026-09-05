@@ -2,9 +2,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { useAuth } from "@/contexts/AuthContext";
 import { mockPatient, mockCaregiverStats } from "@/lib/mock-data";
 
 export function PatientOverviewCard() {
+  const { profile, user } = useAuth();
+  const patientName = profile?.full_name || user?.user_metadata?.full_name || mockPatient.name;
+
   return (
     <Card>
       <CardHeader>
@@ -13,11 +17,11 @@ export function PatientOverviewCard() {
       <CardContent className="space-y-6">
         <div className="flex items-center gap-4">
           <Avatar className="h-16 w-16">
-            <AvatarImage src="" alt={mockPatient.name} />
-            <AvatarFallback>{mockPatient.name.charAt(0)}</AvatarFallback>
+            <AvatarImage src={profile?.avatar_url || ""} alt={patientName} />
+            <AvatarFallback>{patientName.charAt(0)}</AvatarFallback>
           </Avatar>
           <div>
-            <h3 className="text-xl font-bold">{mockPatient.name}</h3>
+            <h3 className="text-xl font-bold">{patientName}</h3>
             <div className="text-sm text-muted-foreground">Age: {mockPatient.age}</div>
             <div className="flex items-center gap-2 mt-1">
               <Badge variant="secondary">{mockPatient.condition}</Badge>
