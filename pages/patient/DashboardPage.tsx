@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { GreetingCard } from "@/components/patient/greeting-card"
 import { PatientStatusCard } from "@/components/patient/patient-status-card"
 import { ScheduleCard } from "@/components/patient/schedule-card"
@@ -7,6 +7,7 @@ import { GameCard } from "@/components/patient/game-card"
 import { MemoryCard } from "@/components/patient/memory-card"
 import { AssistantCard } from "@/components/patient/assistant-card"
 import { SosButton } from "@/components/patient/sos-button"
+import { OnboardingWelcomeCard } from "@/components/patient/onboarding-welcome-card"
 import { useAuth } from "@/contexts/AuthContext"
 import { useCurrentPatient, usePatientDashboard } from "@/hooks/usePatientData"
 import { markScheduleCompleted, markMedicationTaken } from "@/lib/services/patientService"
@@ -14,12 +15,33 @@ import { Loader2, AlertCircle, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export default function PatientDashboardPage() {
-  const { profile, user } = useAuth()
+  const { user, profile } = useAuth()
   const { patient, loading: patientLoading, error: patientError, refetch: refetchPatient } = useCurrentPatient()
   const { dashboardData, loading: dashLoading, error: dashError, refetch: refetchDash } = usePatientDashboard(patient?.id)
 
   const [savingScheduleId, setSavingScheduleId] = useState<string | null>(null)
   const [savingMedId, setSavingMedId] = useState<string | null>(null)
+  const [showOnboarding, setShowOnboarding] = useState<boolean>(false)
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    const isDismissed = localStorage.getItem("smriti_onboarding_dismissed") === "true"
+    const isFlagged = localStorage.getItem("smriti_show_onboarding_welcome") === "true"
+
+    // If explicitly marked as first-time signup or if user is brand new and hasn't dismissed guide
+    if (!isDismissed) {
+      if (isFlagged) {
+        setShowOnboarding(true)
+      } else if (user) {
+        // Check if user was created within the last 24 hours
+        const createdAt = user.created_at ? new Date(user.created_at).getTime() : 0
+        const isNewUser = Date.now() - createdAt < 24 * 60 * 60 * 1000
+        if (isNewUser) {
+          setShowOnboarding(true)
+        }
+      }
+    }
+  }, [user])
 
   const handleToggleSchedule = async (scheduleId: string) => {
     if (!patient?.id || !dashboardData) return
@@ -94,6 +116,13 @@ export default function PatientDashboardPage() {
   return (
     <div className="flex flex-col gap-8 pb-10">
       <GreetingCard name={firstName} />
+
+      {showOnboarding && (
+        <OnboardingWelcomeCard
+          patientName={firstName}
+          onDismiss={() => setShowOnboarding(false)}
+        />
+      )}
 
       <PatientStatusCard
         totalTasks={dashboardData?.totalTasks || 0}

@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react"
 import { useNavigate, Link } from "react-router-dom"
-import { Brain, User, Mail, Lock, Eye, EyeOff, Check, ShieldCheck, Heart, ArrowRight } from "lucide-react"
+import { Brain, User, Mail, Lock, Eye, EyeOff, Check, ShieldCheck, Heart, ArrowRight, Phone, Calendar, Users } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useAuth } from "@/contexts/AuthContext";
-import { isSupabaseConfigured } from "@/lib/supabase/client";
+import { useAuth } from "@/contexts/AuthContext"
+import { isSupabaseConfigured } from "@/lib/supabase/client"
 
 function GoogleIcon() {
   return (
@@ -33,47 +33,126 @@ function GoogleIcon() {
 
 export default function SignupPage() {
   const navigate = useNavigate()
-  const { user, role: userRole, signUp, signInWithGoogle, loading } = useAuth()
+  const { user, role: userRole, signUp, signIn, signInWithGoogle, loading } = useAuth()
   const [role, setRole] = useState<"patient" | "caregiver">("patient")
   const [name, setName] = useState("")
+  const [age, setAge] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [emergencyContact, setEmergencyContact] = useState("")
+  const [caregiverEmail, setCaregiverEmail] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [errorMsg, setErrorMsg] = useState("")
+  const [successMsg, setSuccessMsg] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
 
-  // Auto redirect if already authenticated
   useEffect(() => {
-    if (!loading && user) {
-      if (userRole === "caregiver") {
-        navigate("/caregiver/dashboard", { replace: true })
-      } else {
-        navigate("/patient/dashboard", { replace: true })
-      }
+    if (!loading && user && userRole) {
+      navigate(userRole === "caregiver" ? "/caregiver/dashboard" : "/patient/dashboard", { replace: true })
     }
   }, [user, userRole, loading, navigate])
 
+  const validateForm = () => {
+    if (!name.trim()) {
+      return "Please enter your full name."
+    }
+    if (role === "patient") {
+      if (!age.trim()) {
+        return "Please enter your age."
+      }
+      const numAge = parseInt(age.trim(), 10)
+      if (isNaN(numAge) || numAge < 1 || numAge > 125) {
+        return "Please enter a valid age between 1 and 125."
+      }
+      if (!emergencyContact.trim()) {
+        return "Please enter an emergency contact phone number."
+      }
+      const phoneClean = emergencyContact.trim().replace(/[\s\-\(\)\+]/g, "")
+      if (phoneClean.length < 7) {
+        return "Please enter a valid emergency contact number."
+      }
+      if (caregiverEmail.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(caregiverEmail.trim())) {
+        return "Please enter a valid caregiver email address or leave it empty."
+      }
+    }
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      return "Please enter a valid email address."
+    }
+    if (!password || password.length < 6) {
+      return "Password must be at least 6 characters long."
+    }
+    return null
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
     setErrorMsg("")
+    setSuccessMsg("")
+
+    const validationError = validateForm()
+    if (validationError) {
+      setErrorMsg(validationError)
+      return
+    }
+
+    setIsLoading(true)
 
     try {
-      await signUp({
-        email,
+      // Set the first-login onboarding flag for the new patient in localStorage
+      if (typeof window !== "undefined" && role === "patient") {
+        localStorage.setItem("smriti_show_onboarding_welcome", "true")
+        localStorage.setItem("smriti_onboarding_name", name.trim())
+      }
+
+      const signupResult = await signUp({
+        email: email.trim(),
         password,
-        fullName: name,
+        fullName: name.trim(),
         role,
+        age: role === "patient" ? parseInt(age.trim(), 10) : undefined,
+        emergencyContact: role === "patient" ? emergencyContact.trim() : undefined,
+        caregiverEmail: role === "patient" && caregiverEmail.trim() ? caregiverEmail.trim() : undefined,
       })
+
       if (!isSupabaseConfigured) {
-        navigate("/login", { replace: true })
+        setSuccessMsg("Account created! Directing to dashboard...")
+        setTimeout(() => {
+          if (role === "patient") {
+            navigate("/patient/dashboard", { replace: true })
+          } else {
+            navigate("/caregiver/dashboard", { replace: true })
+          }
+        }, 300)
         return
       }
-      if (role === "patient") {
-        navigate("/patient/dashboard")
+
+      // If Supabase session is created immediately (e.g., auto-confirm enabled)
+      if (signupResult?.session || signupResult?.user) {
+        // If no active session returned (email confirmation enabled on Supabase), try signing in
+        if (!signupResult.session) {
+          try {
+            await signIn(email.trim(), password, role)
+          } catch (autoLoginErr: any) {
+            // If confirmation is strictly required by Supabase:
+            if (autoLoginErr?.message?.toLowerCase().includes("email not confirmed")) {
+              setSuccessMsg("Account created! Please check your email to confirm your account, then sign in.")
+              setIsLoading(false)
+              return
+            }
+          }
+        }
+
+        setSuccessMsg("Welcome to SmritiCare! Setting up your personal dashboard...")
+        setTimeout(() => {
+          if (role === "patient") {
+            navigate("/patient/dashboard", { replace: true })
+          } else {
+            navigate("/caregiver/dashboard", { replace: true })
+          }
+        }, 400)
       } else {
-        navigate("/caregiver/dashboard")
+        navigate(role === "patient" ? "/patient/dashboard" : "/caregiver/dashboard", { replace: true })
       }
     } catch (error: any) {
       console.error("Signup failed:", error)
@@ -87,7 +166,10 @@ export default function SignupPage() {
     setIsGoogleLoading(true)
     setErrorMsg("")
     try {
-      await signInWithGoogle(role)
+      const res = await signInWithGoogle(role)
+      if (res?.user) {
+        navigate(role === "caregiver" ? "/caregiver/dashboard" : "/patient/dashboard", { replace: true })
+      }
     } catch (error: any) {
       console.error("Google sign up failed:", error)
       setErrorMsg(error?.message || "Google sign up failed. Please try again.")
@@ -234,6 +316,14 @@ export default function SignupPage() {
               </div>
             </div>
 
+            {/* Success message alert */}
+            {successMsg && (
+              <div className="p-3.5 mb-4 text-xs sm:text-sm text-lime-400 bg-lime-500/15 border border-lime-500/30 rounded-xl flex items-center gap-2">
+                <Check className="w-4 h-4 text-lime-400 shrink-0" />
+                <span>{successMsg}</span>
+              </div>
+            )}
+
             {/* Error message alert */}
             {errorMsg && (
               <div className="p-3.5 mb-4 text-xs sm:text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl">
@@ -242,10 +332,10 @@ export default function SignupPage() {
             )}
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3.5">
               <div className="space-y-1.5">
                 <Label htmlFor="name" className="text-xs text-neutral-300 font-medium">
-                  Full Name
+                  Full Name <span className="text-lime-400">*</span>
                 </Label>
                 <div className="relative">
                   <User className="w-4 h-4 text-lime-400/80 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -255,15 +345,78 @@ export default function SignupPage() {
                     placeholder="Enter your full name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="pl-10 h-12 bg-[#161616] border-white/10 text-white placeholder:text-neutral-500 rounded-xl focus-visible:ring-lime-400"
+                    className="pl-10 h-11 bg-[#161616] border-white/10 text-white placeholder:text-neutral-500 rounded-xl focus-visible:ring-lime-400"
                     required
                   />
                 </div>
               </div>
 
+              {/* Patient-specific Onboarding Fields */}
+              {role === "patient" && (
+                <>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="age" className="text-xs text-neutral-300 font-medium">
+                      Age <span className="text-lime-400">*</span>
+                    </Label>
+                    <div className="relative">
+                      <Calendar className="w-4 h-4 text-lime-400/80 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <Input
+                        id="age"
+                        type="number"
+                        min="1"
+                        max="125"
+                        placeholder="e.g. 68"
+                        value={age}
+                        onChange={(e) => setAge(e.target.value)}
+                        className="pl-10 h-11 bg-[#161616] border-white/10 text-white placeholder:text-neutral-500 rounded-xl focus-visible:ring-lime-400"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="emergencyContact" className="text-xs text-neutral-300 font-medium">
+                      Emergency Contact Number <span className="text-lime-400">*</span>
+                    </Label>
+                    <div className="relative">
+                      <Phone className="w-4 h-4 text-lime-400/80 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <Input
+                        id="emergencyContact"
+                        type="tel"
+                        placeholder="e.g. +91 98765 43210"
+                        value={emergencyContact}
+                        onChange={(e) => setEmergencyContact(e.target.value)}
+                        className="pl-10 h-11 bg-[#161616] border-white/10 text-white placeholder:text-neutral-500 rounded-xl focus-visible:ring-lime-400"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-center">
+                      <Label htmlFor="caregiverEmail" className="text-xs text-neutral-300 font-medium">
+                        Caregiver Email
+                      </Label>
+                      <span className="text-[11px] text-neutral-400">(Optional)</span>
+                    </div>
+                    <div className="relative">
+                      <Users className="w-4 h-4 text-lime-400/80 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <Input
+                        id="caregiverEmail"
+                        type="email"
+                        placeholder="caregiver@family.org"
+                        value={caregiverEmail}
+                        onChange={(e) => setCaregiverEmail(e.target.value)}
+                        className="pl-10 h-11 bg-[#161616] border-white/10 text-white placeholder:text-neutral-500 rounded-xl focus-visible:ring-lime-400"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
               <div className="space-y-1.5">
                 <Label htmlFor="email" className="text-xs text-neutral-300 font-medium">
-                  Email
+                  Email <span className="text-lime-400">*</span>
                 </Label>
                 <div className="relative">
                   <Mail className="w-4 h-4 text-lime-400/80 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -273,7 +426,7 @@ export default function SignupPage() {
                     placeholder="Enter your email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10 h-12 bg-[#161616] border-white/10 text-white placeholder:text-neutral-500 rounded-xl focus-visible:ring-lime-400"
+                    className="pl-10 h-11 bg-[#161616] border-white/10 text-white placeholder:text-neutral-500 rounded-xl focus-visible:ring-lime-400"
                     required
                   />
                 </div>
@@ -281,17 +434,17 @@ export default function SignupPage() {
 
               <div className="space-y-1.5">
                 <Label htmlFor="password" className="text-xs text-neutral-300 font-medium">
-                  Password
+                  Password <span className="text-lime-400">*</span>
                 </Label>
                 <div className="relative">
                   <Lock className="w-4 h-4 text-lime-400/80 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Create a strong password"
+                    placeholder="Create a password (min. 6 characters)"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 pr-10 h-12 bg-[#161616] border-white/10 text-white placeholder:text-neutral-500 rounded-xl focus-visible:ring-lime-400"
+                    className="pl-10 pr-10 h-11 bg-[#161616] border-white/10 text-white placeholder:text-neutral-500 rounded-xl focus-visible:ring-lime-400"
                     required
                   />
                   <button

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useAuth } from '@/contexts/AuthContext'
 import {
   getCurrentPatient,
   getTodaySchedule,
@@ -20,11 +21,19 @@ import {
 } from '@/lib/services/patientService'
 
 export function useCurrentPatient() {
+  const { user, role, loading: authLoading } = useAuth()
   const [patient, setPatient] = useState<PatientWithProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const fetchPatient = useCallback(async () => {
+    if (authLoading) return
+    if (!user || role === 'caregiver') {
+      setPatient(null)
+      setLoading(false)
+      return
+    }
+
     setLoading(true)
     setError(null)
     try {
@@ -35,13 +44,13 @@ export function useCurrentPatient() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [authLoading, user, role])
 
   useEffect(() => {
     fetchPatient()
   }, [fetchPatient])
 
-  return { patient, loading, error, refetch: fetchPatient }
+  return { patient, loading: authLoading || loading, error, refetch: fetchPatient }
 }
 
 export function useTodaySchedule(patientId?: string | null, date?: string) {

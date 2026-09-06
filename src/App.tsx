@@ -3,6 +3,9 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { PatientLayout } from '@/layouts/PatientLayout'
 import { CaregiverLayout } from '@/layouts/CaregiverLayout'
+import { Toaster } from 'sonner'
+
+import { AuthCallback } from '@/components/AuthCallback'
 
 // Public Pages
 import LandingPage from '@/pages/LandingPage'
@@ -35,6 +38,8 @@ export function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/callback" element={<AuthCallback />} />
 
           {/* Protected Patient Routes */}
           <Route
@@ -76,6 +81,7 @@ export function App() {
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        <Toaster />
       </BrowserRouter>
     </AuthProvider>
   )

@@ -8,11 +8,15 @@ interface ProtectedRouteProps {
   requiredRole?: UserRole
 }
 
+function dashboardPath(role: UserRole) {
+  return role === 'caregiver' ? '/caregiver/dashboard' : '/patient/dashboard'
+}
+
 export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
   const { user, role, loading } = useAuth()
   const location = useLocation()
 
-  if (loading) {
+  if (loading || (user && !role)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-3">
@@ -23,14 +27,12 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
     )
   }
 
-  // Not authenticated -> redirect to login with redirect path
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 
-  // If requiredRole is specified but user profile role hasn't populated yet, default to allowing access
   if (requiredRole && role && role !== requiredRole) {
-    // Only redirect if explicitly on a wrong path for a logged in caregiver trying to view patient settings or vice versa
+    return <Navigate to={dashboardPath(role)} replace />
   }
 
   return <>{children}</>

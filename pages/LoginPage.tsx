@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useAuth } from "@/contexts/AuthContext"
-import { isSupabaseConfigured, supabase } from "@/lib/supabase/client"
+import { isSupabaseConfigured } from "@/lib/supabase/client"
 
 function GoogleIcon() {
   return (
@@ -42,14 +42,10 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
 
-  // Auto redirect if already authenticated
+  // Wait until the profile role is known so caregivers are not sent to the patient home.
   useEffect(() => {
-    if (!loading && user) {
-      if (userRole === "caregiver") {
-        navigate("/caregiver/dashboard", { replace: true })
-      } else {
-        navigate("/patient/dashboard", { replace: true })
-      }
+    if (!loading && user && userRole) {
+      navigate(userRole === "caregiver" ? "/caregiver/dashboard" : "/patient/dashboard", { replace: true })
     }
   }, [user, userRole, loading, navigate])
 
@@ -59,26 +55,9 @@ export default function LoginPage() {
     setErrorMsg("")
 
     try {
-      const data = await signIn(email.trim(), password)
-      const signedInUser = data?.user
-      let resolvedRole = role
-      if (signedInUser) {
-        // Resolve profile from database to ensure correct role
-        const { data: prof } = await supabase
-          .from("profiles")
-          .select("role")
-          .eq("id", signedInUser.id)
-          .maybeSingle()
-        if (prof?.role) {
-          resolvedRole = prof.role
-        }
-      }
-
-      if (resolvedRole === "caregiver") {
-        navigate("/caregiver/dashboard")
-      } else {
-        navigate("/patient/dashboard")
-      }
+      const data = await signIn(email.trim(), password, role)
+      const resolvedRole = data?.profile?.role || role
+      navigate(resolvedRole === "caregiver" ? "/caregiver/dashboard" : "/patient/dashboard", { replace: true })
     } catch (error: any) {
       console.error("Login failed:", error)
       const rawMsg = (error?.message || "").toLowerCase()
@@ -96,7 +75,10 @@ export default function LoginPage() {
     setIsGoogleLoading(true)
     setErrorMsg("")
     try {
-      await signInWithGoogle(role)
+      const res = await signInWithGoogle(role)
+      if (res?.user) {
+        navigate(role === "caregiver" ? "/caregiver/dashboard" : "/patient/dashboard", { replace: true })
+      }
     } catch (error: any) {
       console.error("Google sign in failed:", error)
       setErrorMsg(error?.message || "Google sign in failed. Please try again.")

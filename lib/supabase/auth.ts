@@ -9,6 +9,9 @@ export interface SignUpParams {
   phone?: string
   dob?: string
   avatarUrl?: string
+  age?: number | string
+  emergencyContact?: string
+  caregiverEmail?: string
 }
 
 /**
@@ -22,6 +25,9 @@ export async function signUp({
   phone,
   dob,
   avatarUrl,
+  age,
+  emergencyContact,
+  caregiverEmail,
 }: SignUpParams) {
   assertSupabaseConfigured()
 
@@ -32,9 +38,12 @@ export async function signUp({
       data: {
         full_name: fullName,
         role,
-        phone,
+        phone: phone || emergencyContact,
         dob,
         avatar_url: avatarUrl,
+        age,
+        emergency_contact: emergencyContact,
+        caregiver_email: caregiverEmail,
       },
     },
   })
@@ -68,7 +77,9 @@ export async function signInWithGoogle(role?: UserRole) {
     localStorage.setItem('smriti_pending_oauth_role', role)
   }
 
-  const redirectTo = window.location.origin
+  const redirectTo = typeof window !== 'undefined'
+    ? `${window.location.origin}/auth/callback`
+    : undefined
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',

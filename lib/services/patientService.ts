@@ -202,9 +202,154 @@ function getDemoStore() {
 }
 
 function saveDemoStore(store: any) {
-  if (typeof window !== 'undefined') {
-    window.localStorage.setItem(DEMO_STORE_KEY, JSON.stringify(store))
+  if (typeof window === 'undefined') return
+
+  const persist = (value: any) => {
+    window.localStorage.setItem(DEMO_STORE_KEY, JSON.stringify(value))
   }
+
+  try {
+    persist(store)
+    return
+  } catch {
+    const stripped = {
+      ...store,
+      memories: (store.memories || []).map((item: any, index: number) =>
+        index === 0 ? item : { ...item, media_url: null }
+      ),
+    }
+    try {
+      persist(stripped)
+      Object.assign(store, stripped)
+      return
+    } catch {
+      const textOnly = {
+        ...store,
+        memories: (store.memories || []).map((item: any) => ({ ...item, media_url: null })),
+      }
+      persist(textOnly)
+      Object.assign(store, textOnly)
+    }
+  }
+}
+
+function isUuid(value: string | null | undefined): boolean {
+  if (!value) return false
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
+}
+
+function describeWriteError(error: { message?: string; code?: string } | null | undefined, fallback: string) {
+  const message = error?.message || fallback
+  if (message.toLowerCase().includes('schema cache') || message.toLowerCase().includes('could not find the table')) {
+    return 'Database tables are missing. In Supabase, open SQL Editor, paste supabase/setup.sql, and click Run.'
+  }
+  if (message.toLowerCase().includes('row-level security')) {
+    return 'You do not have permission to save this yet. Refresh the page and try again.'
+  }
+  if (message.toLowerCase().includes('foreign key') || error?.code === '23503') {
+    return 'Your patient profile is still being set up. Refresh the page and try again.'
+  }
+  if (message.toLowerCase().includes('quota') || message.toLowerCase().includes('payload')) {
+    return 'That photo or video is too large to save. Try a smaller photo, or save without media.'
+  }
+  return message
+}
+
+/**
+ * Returns a real `patients.id` for writes. Never uses the auth user id as a stand-in,
+ * because memories.patient_id references patients.id (a different UUID).
+ */
+export async function resolveWritablePatientId(preferredPatientId?: string | null): Promise<string> {
+  if (!isSupabaseConfigured) {
+    if (preferredPatientId && preferredPatientId !== 'demo-caregiver-id') {
+      return preferredPatientId
+    }
+    return DEMO_PATIENT_ID
+  }
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+  if (authError || !user) {
+    throw new Error('Please sign in to save a memory.')
+  }
+
+  if (preferredPatientId && isUuid(preferredPatientId) && preferredPatientId !== user.id) {
+    const { data: existingById } = await supabase
+      .from('patients')
+      .select('id')
+      .eq('id', preferredPatientId)
+      .maybeSingle()
+    if (existingById?.id) return existingById.id
+  }
+
+  const { data: existingByProfile } = await supabase
+    .from('patients')
+    .select('id')
+    .eq('profile_id', user.id)
+    .maybeSingle()
+  if (existingByProfile?.id) return existingByProfile.id
+
+  const { data: profile } = await supabase.from('profiles').select('id').eq('id', user.id).maybeSingle()
+  if (!profile) {
+    const fullName =
+      user.user_metadata?.full_name ||
+      user.user_metadata?.name ||
+      user.email?.split('@')[0] ||
+      'Patient'
+    const { error: profileError } = await supabase.from('profiles').upsert({
+      id: user.id,
+      role: (user.user_metadata?.role as ProfileRow['role']) || 'patient',
+      full_name: fullName,
+      avatar_url: user.user_metadata?.avatar_url || null,
+    })
+    if (profileError) {
+      throw new Error(describeWriteError(profileError, 'Unable to create your profile.'))
+    }
+  }
+
+  const { data: created, error: createError } = await supabase
+    .from('patients')
+    .upsert({ profile_id: user.id }, { onConflict: 'profile_id' })
+    .select('id')
+    .maybeSingle()
+
+  if (createError || !created?.id) {
+    throw new Error(describeWriteError(createError, 'Unable to create your patient profile.'))
+  }
+
+  return created.id
+}
+
+/**
+ * Helper: build a minimal in-memory patient so the UI renders even when DB is unavailable.
+ */
+function buildFallbackPatient(user: any, profile?: ProfileRow | null): PatientWithProfile {
+  const fallbackProfile: ProfileRow = profile || {
+    id: user.id,
+    role: 'patient',
+    full_name:
+      user.user_metadata?.full_name ||
+      user.user_metadata?.name ||
+      user.email?.split('@')[0] ||
+      'Patient',
+    phone: user.user_metadata?.emergency_contact || user.user_metadata?.phone || null,
+    dob: null,
+    avatar_url: user.user_metadata?.avatar_url || null,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  } as ProfileRow
+
+  return {
+    id: user.id,
+    profile_id: user.id,
+    emergency_contact: user.user_metadata?.emergency_contact || user.user_metadata?.phone || null,
+    blood_group: null,
+    medical_notes: null,
+    created_at: new Date().toISOString(),
+    profile: fallbackProfile,
+  } as PatientWithProfile
 }
 
 /**
@@ -240,47 +385,58 @@ export async function getCurrentPatient(): Promise<PatientWithProfile | null> {
     return null
   }
 
-  // Fetch patient record with profile
-  const { data: patient, error: patientError } = await supabase
-    .from('patients')
-    .select('*, profiles(*)')
-    .eq('profile_id', user.id)
-    .maybeSingle()
-
-  if (patientError) {
-    console.error('Error fetching patient record:', patientError.message)
-    throw new Error('Unable to load patient record.')
-  }
-
-  if (patient && (patient as any).profiles) {
-    const p = patient as any
-    return {
-      ...p,
-      profile: p.profiles as ProfileRow,
-    }
-  }
-
-  // If patient row doesn't exist yet for this authenticated user, auto-provision it
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', user.id)
     .maybeSingle()
 
-  const { data: newPatient, error: createError } = await supabase
-    .from('patients')
-    .insert({ profile_id: user.id })
-    .select('*, profiles(*)')
-    .single()
+  if (profileError?.message?.toLowerCase().includes('schema cache')) {
+    console.error('profiles table is missing. Run supabase/setup.sql in the Supabase SQL Editor.')
+    return buildFallbackPatient(user)
+  }
 
-  if (createError || !newPatient) {
-    console.error('Failed to provision patient record:', createError?.message)
+  if ((profile as ProfileRow | null)?.role === 'caregiver') {
     return null
   }
 
-  return {
-    ...(newPatient as any),
-    profile: ((newPatient as any).profiles || profile) as ProfileRow,
+  const { data: patient, error: patientError } = await supabase
+    .from('patients')
+    .select('*')
+    .eq('profile_id', user.id)
+    .maybeSingle()
+
+  if (patientError) {
+    console.error('Error fetching patient record:', patientError.message)
+    return buildFallbackPatient(user, profile as ProfileRow | null)
+  }
+
+  if (patient) {
+    return {
+      ...(patient as PatientRow),
+      profile: (profile as ProfileRow) || buildFallbackPatient(user).profile,
+    }
+  }
+
+  try {
+    const { data: newPatient, error: createError } = await supabase
+      .from('patients')
+      .upsert({ profile_id: user.id }, { onConflict: 'profile_id' })
+      .select('*')
+      .maybeSingle()
+
+    if (!createError && newPatient) {
+      return {
+        ...(newPatient as PatientRow),
+        profile: (profile as ProfileRow) || buildFallbackPatient(user).profile,
+      }
+    }
+
+    console.warn('Could not provision patient row, using fallback:', createError?.message)
+    return buildFallbackPatient(user, profile as ProfileRow | null)
+  } catch (err) {
+    console.warn('Patient provisioning exception, using fallback:', err)
+    return buildFallbackPatient(user, profile as ProfileRow | null)
   }
 }
 
@@ -315,7 +471,7 @@ export async function getTodaySchedule(
 
   if (schedError) {
     console.error('Error fetching schedules:', schedError.message)
-    throw new Error('Unable to load daily schedule.')
+    return []
   }
 
   if (!schedules || schedules.length === 0) {
@@ -356,20 +512,28 @@ export async function getTodaySchedule(
  * 3. Retrieves active medications for a patient, joined with today's medication logs.
  */
 export async function getPatientMemories(patientId: string): Promise<any[]> {
+  let resolvedPatientId = patientId
+  try {
+    resolvedPatientId = await resolveWritablePatientId(patientId)
+  } catch (err) {
+    console.error('Error resolving patient for memories:', err)
+    if (!patientId) return []
+  }
+
   if (!isSupabaseConfigured) {
     const store = getDemoStore()
-    return (store.memories || []).filter((memory: any) => memory.patient_id === patientId)
+    return (store.memories || []).filter((memory: any) => memory.patient_id === resolvedPatientId)
   }
 
   const { data, error } = await supabase
     .from('memories')
     .select('*')
-    .eq('patient_id', patientId)
+    .eq('patient_id', resolvedPatientId)
     .order('created_at', { ascending: false })
 
   if (error) {
     console.error('Error fetching memories:', error.message)
-    throw new Error('Unable to load memories.')
+    return []
   }
 
   return data || []
@@ -399,7 +563,7 @@ export async function getActiveMedications(
 
   if (medsError) {
     console.error('Error fetching medications:', medsError.message)
-    throw new Error('Unable to load medications.')
+    return []
   }
 
   if (!meds || meds.length === 0) {
@@ -482,7 +646,7 @@ export async function getEmergencyContacts(patientId: string): Promise<Emergency
 
   if (error) {
     console.error('Error fetching emergency contacts:', error.message)
-    throw new Error('Unable to load emergency contacts.')
+    return []
   }
 
   return data || []
@@ -645,7 +809,10 @@ export async function addMedication(patientId: string, medication: { name: strin
     .select()
     .single()
 
-  if (error || !data) throw new Error('Failed to add medication.')
+  if (error || !data) {
+    console.error('Error adding medication:', error?.message)
+    throw new Error(error?.message || 'Failed to add medication.')
+  }
   return data
 }
 
@@ -746,7 +913,10 @@ export async function addScheduleItem(patientId: string, schedule: { title: stri
     .select()
     .single()
 
-  if (error || !data) throw new Error('Failed to add schedule item.')
+  if (error || !data) {
+    console.error('Error adding schedule item:', error?.message)
+    throw new Error(error?.message || 'Failed to add schedule item.')
+  }
   return data
 }
 
@@ -813,35 +983,57 @@ export async function deleteScheduleItem(patientId: string, scheduleId: string) 
   if (error) throw new Error('Failed to delete schedule item.')
 }
 
+const MAX_STORED_MEDIA_CHARS = 350_000
+
 export async function createMemory(patientId: string, memory: { title: string; description?: string; media_url?: string | null }) {
+  const title = memory.title.trim()
+  if (!title) {
+    throw new Error('Please enter a memory title.')
+  }
+
+  const resolvedPatientId = await resolveWritablePatientId(patientId)
+  let mediaUrl = memory.media_url || null
+  if (mediaUrl && mediaUrl.startsWith('data:') && mediaUrl.length > MAX_STORED_MEDIA_CHARS) {
+    mediaUrl = null
+  }
+
   if (!isSupabaseConfigured) {
     const store = getDemoStore()
     const newMemory = {
       id: `demo-memory-${Date.now()}`,
-      patient_id: patientId,
-      title: memory.title.trim(),
+      patient_id: resolvedPatientId,
+      title,
       description: memory.description?.trim() || null,
-      media_url: memory.media_url || null,
+      media_url: mediaUrl,
       created_at: new Date().toISOString(),
     }
 
     store.memories = [newMemory, ...(store.memories || [])]
-    saveDemoStore(store)
+    try {
+      saveDemoStore(store)
+    } catch {
+      newMemory.media_url = null
+      store.memories = [newMemory, ...(store.memories || []).slice(1)]
+      saveDemoStore(store)
+    }
     return newMemory
   }
 
   const { data, error } = await supabase
     .from('memories')
     .insert({
-      patient_id: patientId,
-      title: memory.title.trim(),
+      patient_id: resolvedPatientId,
+      title,
       description: memory.description?.trim() || null,
-      media_url: memory.media_url || null,
+      media_url: mediaUrl,
     })
     .select()
     .single()
 
-  if (error || !data) throw new Error('Failed to save memory.')
+  if (error || !data) {
+    console.error('Error saving memory:', error?.message, error)
+    throw new Error(describeWriteError(error, 'Failed to save memory.'))
+  }
   return data
 }
 
@@ -1146,14 +1338,16 @@ export async function triggerSOS(
  */
 export async function getPatientDashboardData(patientId: string): Promise<PatientDashboardMetrics> {
   const patient = await getCurrentPatient()
-  if (!patient || patient.id !== patientId) {
+  if (!patient) {
     throw new Error('Patient not found.')
   }
 
+  const resolvedId = patient.id || patientId
+
   const [todaySchedule, medications, emergencyContacts] = await Promise.all([
-    getTodaySchedule(patientId),
-    getActiveMedications(patientId),
-    getEmergencyContacts(patientId),
+    getTodaySchedule(resolvedId).catch(() => [] as ScheduleItemWithStatus[]),
+    getActiveMedications(resolvedId).catch(() => [] as MedicationWithLogStatus[]),
+    getEmergencyContacts(resolvedId).catch(() => [] as EmergencyContactRow[]),
   ])
 
   const totalTasks = todaySchedule.length

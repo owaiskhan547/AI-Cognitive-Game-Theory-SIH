@@ -13,16 +13,16 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Plus, Upload, Loader2 } from 'lucide-react'
 import { memoryService } from '@/lib/supabase/services/memory'
-import { useAuth } from '@/contexts/AuthContext'
+import { createMemory, getCurrentPatient, resolveWritablePatientId } from '@/lib/services/patientService'
 import { toast } from 'sonner'
 
 interface AddMemoryModalProps {
   onMemoryAdded?: () => void
   patientId?: string
+  disabled?: boolean
 }
 
-export function AddMemoryModal({ onMemoryAdded, patientId }: AddMemoryModalProps) {
-  const { user } = useAuth()
+export function AddMemoryModal({ onMemoryAdded, patientId, disabled }: AddMemoryModalProps) {
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -45,42 +45,42 @@ export function AddMemoryModal({ onMemoryAdded, patientId }: AddMemoryModalProps
       return
     }
 
-    let targetPatientId = patientId || user?.id
-    if (!targetPatientId) {
-      toast.error('Patient ID not found')
-      return
-    }
-
     setLoading(true)
     try {
-      // Resolve patient_id from profile or patient record
-      const patientRecord = await memoryService.getOrCreatePatientRecord(targetPatientId)
-      if (patientRecord?.id) {
-        targetPatientId = patientRecord.id
+      let targetPatientId = patientId
+      if (!targetPatientId) {
+        const current = await getCurrentPatient()
+        targetPatientId = current?.id
       }
+      targetPatientId = await resolveWritablePatientId(targetPatientId)
+
       let mediaUrl: string | null = null
+      let mediaWarning: string | null = null
 
       if (file) {
         try {
           mediaUrl = await memoryService.uploadMemoryImage(file, targetPatientId)
         } catch (uploadErr) {
-          console.warn('Storage bucket upload failed, using local Data URL fallback:', uploadErr)
-          mediaUrl = await new Promise<string>((resolve) => {
-            const reader = new FileReader()
-            reader.onloadend = () => resolve(reader.result as string)
-            reader.readAsDataURL(file)
-          })
+          console.warn('Could not attach media to memory:', uploadErr)
+          mediaWarning = 'Memory saved without the photo or video. Try a smaller photo next time.'
         }
       }
 
-      await memoryService.createMemory({
-        patient_id: targetPatientId,
+      await createMemory(targetPatientId, {
         title,
         description,
         media_url: mediaUrl,
       })
 
-      toast.success('Memory created successfully!')
+      if (file && !mediaUrl) {
+        mediaWarning = 'Memory saved without the photo or video because the file was too large.'
+      }
+
+      if (mediaWarning) {
+        toast.success(mediaWarning)
+      } else {
+        toast.success('Memory created successfully!')
+      }
       setTitle('')
       setDescription('')
       setFile(null)
@@ -98,7 +98,7 @@ export function AddMemoryModal({ onMemoryAdded, patientId }: AddMemoryModalProps
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="lg" className="rounded-xl flex items-center gap-2">
+        <Button size="lg" className="rounded-xl flex items-center gap-2" disabled={disabled}>
           <Plus className="w-5 h-5" />
           Add Memory
         </Button>

@@ -5,8 +5,10 @@ import {
   Menu,
   X,
   Brain,
+  LayoutDashboard,
 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
+import { useAuth } from "@/contexts/AuthContext"
 
 const navLinks = [
   { href: "#how-it-works", label: "How It Works" },
@@ -15,7 +17,9 @@ const navLinks = [
 ]
 
 export function Navbar() {
+  const { user, role } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const dashboardUrl = role === "caregiver" ? "/caregiver/dashboard" : "/patient/dashboard"
 
   useEffect(() => {
     if (mobileMenuOpen) {
@@ -58,12 +62,23 @@ export function Navbar() {
 
           {/* Desktop Buttons - hidden below lg */}
           <div className="hidden lg:flex items-center gap-3">
-            <Button variant="ghost" size="sm" rounded="full" asChild>
-              <Link to="/login">Log in</Link>
-            </Button>
-            <Button size="sm" rounded="full" asChild>
-              <Link to="/signup">Get Started</Link>
-            </Button>
+            {user ? (
+              <Button size="sm" rounded="full" asChild className="gap-2">
+                <Link to={dashboardUrl}>
+                  <LayoutDashboard className="w-4 h-4" />
+                  <span>Go to Dashboard</span>
+                </Link>
+              </Button>
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" rounded="full" asChild>
+                  <Link to="/login">Log in</Link>
+                </Button>
+                <Button size="sm" rounded="full" asChild>
+                  <Link to="/signup">Get Started</Link>
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button - visible below lg */}
@@ -132,12 +147,23 @@ export function Navbar() {
               </div>
 
               <div className="px-6 py-4 border-t border-border/50 bg-background flex flex-col gap-3">
-                <Button variant="ghost" rounded="lg" className="justify-center text-base py-6 w-full" asChild>
-                  <Link to="/login" onClick={() => setMobileMenuOpen(false)}>Log in</Link>
-                </Button>
-                <Button rounded="full" className="py-6 text-base w-full" asChild>
-                  <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>Get Started</Link>
-                </Button>
+                {user ? (
+                  <Button rounded="full" className="py-6 text-base w-full gap-2" asChild>
+                    <Link to={dashboardUrl} onClick={() => setMobileMenuOpen(false)}>
+                      <LayoutDashboard className="w-5 h-5" />
+                      <span>Go to Dashboard</span>
+                    </Link>
+                  </Button>
+                ) : (
+                  <>
+                    <Button variant="ghost" rounded="lg" className="justify-center text-base py-6 w-full" asChild>
+                      <Link to="/login" onClick={() => setMobileMenuOpen(false)}>Log in</Link>
+                    </Button>
+                    <Button rounded="full" className="py-6 text-base w-full" asChild>
+                      <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>Get Started</Link>
+                    </Button>
+                  </>
+                )}
               </div>
             </motion.div>
           )}
