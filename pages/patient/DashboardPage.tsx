@@ -114,7 +114,7 @@ export default function PatientDashboardPage() {
   const medications = dashboardData?.medications || []
 
   return (
-    <div className="flex flex-col gap-8 pb-10">
+    <div className="flex flex-col gap-6 pb-6">
       <GreetingCard name={firstName} />
 
       {showOnboarding && (
@@ -132,24 +132,19 @@ export default function PatientDashboardPage() {
         medicationsTaken={dashboardData?.medicationsTaken || 0}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-        <div className="space-y-6">
-          <ScheduleCard
-            schedules={todaySchedule}
-            onToggleComplete={handleToggleSchedule}
-            savingId={savingScheduleId}
-          />
-          <GameCard />
-        </div>
-
-        <div className="space-y-6">
-          <MedicationCard
-            medications={medications}
-            onTakeMedication={handleTakeMedication}
-            savingId={savingMedId}
-          />
-          <MemoryCard />
-        </div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-stretch">
+        <ScheduleCard
+          schedules={todaySchedule}
+          onToggleComplete={handleToggleSchedule}
+          savingId={savingScheduleId}
+        />
+        <MedicationCard
+          medications={medications}
+          onTakeMedication={handleTakeMedication}
+          savingId={savingMedId}
+        />
+        <GameCard />
+        <MemoryCard />
       </div>
 
       <AssistantCard />

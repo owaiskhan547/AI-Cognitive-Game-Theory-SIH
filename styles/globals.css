@@ -3,52 +3,49 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Electric Lime theme - #d9f99d accent with #bef264 hover */
+/* SmritiCare dashboard theme — black canvas, lime #A3E635 */
 :root {
-  --background: oklch(0.08 0 0);
-  --foreground: oklch(0.95 0 0);
-  --card: oklch(0.11 0 0);
-  --card-foreground: oklch(0.95 0 0);
-  --popover: oklch(0.11 0 0);
-  --popover-foreground: oklch(0.95 0 0);
-  /* Primary is electric lime #d9f99d */
-  --primary: oklch(0.92 0.16 125);
-  --primary-foreground: oklch(0.08 0 0);
-  --secondary: oklch(0.14 0 0);
-  --secondary-foreground: oklch(0.85 0 0);
-  --muted: oklch(0.18 0 0);
-  --muted-foreground: oklch(0.6 0 0);
-  /* Accent matches primary lime */
-  --accent: oklch(0.92 0.16 125);
-  --accent-foreground: oklch(0.08 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.577 0.245 27.325);
-  /* Border matches #262626 */
-  --border: oklch(0.2 0 0);
-  --input: oklch(0.14 0 0);
-  --ring: oklch(0.92 0.16 125);
-  --chart-1: oklch(0.92 0.16 125);
-  --chart-2: oklch(0.8 0.14 125);
-  --chart-3: oklch(0.65 0.1 125);
-  --chart-4: oklch(0.5 0.06 125);
-  --chart-5: oklch(0.4 0.02 125);
-  --radius: 0.5rem;
-  --sidebar: oklch(0.1 0 0);
-  --sidebar-foreground: oklch(0.95 0 0);
-  --sidebar-primary: oklch(0.92 0.16 125);
-  --sidebar-primary-foreground: oklch(0.08 0 0);
-  --sidebar-accent: oklch(0.14 0 0);
-  --sidebar-accent-foreground: oklch(0.95 0 0);
-  --sidebar-border: oklch(0.2 0 0);
-  --sidebar-ring: oklch(0.92 0.16 125);
+  --background: #000000;
+  --foreground: #f4f4f5;
+  --card: #111827;
+  --card-foreground: #f4f4f5;
+  --popover: #111827;
+  --popover-foreground: #f4f4f5;
+  --primary: #a3e635;
+  --primary-foreground: #052e16;
+  --secondary: #1f2937;
+  --secondary-foreground: #e4e4e7;
+  --muted: #1f2937;
+  --muted-foreground: #a1a1aa;
+  --accent: #a3e635;
+  --accent-foreground: #052e16;
+  --destructive: #991b1b;
+  --destructive-foreground: #fecaca;
+  --border: rgba(255, 255, 255, 0.1);
+  --input: #1f2937;
+  --ring: #a3e635;
+  --chart-1: #a3e635;
+  --chart-2: #84cc16;
+  --chart-3: #4d7c0f;
+  --chart-4: #365314;
+  --chart-5: #1a2e05;
+  --radius: 1rem;
+  --sidebar: #000000;
+  --sidebar-foreground: #f4f4f5;
+  --sidebar-primary: #a3e635;
+  --sidebar-primary-foreground: #052e16;
+  --sidebar-accent: #111827;
+  --sidebar-accent-foreground: #f4f4f5;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: #a3e635;
 }
 
 @theme inline {
-  --font-sans: "Geist", "Geist Fallback";
-  --font-serif: "Geist", "Geist Fallback";
-  --font-mono: "Geist Mono", "Geist Mono Fallback";
-  /* Updated to PT Mono font for logo */
-  --font-logo: var(--font-pt-mono), "PT Mono", monospace;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
+  --font-script: "Caveat", cursive;
+  --font-logo: "Inter", ui-sans-serif, system-ui, sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -92,7 +89,8 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-sans);
   }
 }
 
@@ -150,7 +148,6 @@ html {
   color: oklch(0.08 0 0);
 }
 
-/* Letter spacing for headings */
-.tracking-display {
-  letter-spacing: -0.02em;
+.font-script {
+  font-family: "Caveat", cursive;
 }

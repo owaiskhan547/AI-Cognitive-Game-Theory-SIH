@@ -1,8 +1,6 @@
-import { Clock, CheckCircle2, Circle, Loader2 } from "lucide-react"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import { cn } from "@/lib/utils"
+import { ArrowRight, CalendarCheck, CheckCircle2, Circle, Loader2 } from "lucide-react"
 import { Link } from "react-router-dom"
-import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import type { ScheduleItemWithStatus } from "@/lib/services/patientService"
 
 interface ScheduleCardProps {
@@ -12,47 +10,51 @@ interface ScheduleCardProps {
 }
 
 export function ScheduleCard({ schedules, onToggleComplete, savingId }: ScheduleCardProps) {
-
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="text-2xl flex items-center gap-3">
-          <Clock className="w-7 h-7 text-primary" />
-          Today's Schedule
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="space-y-4">
-          {schedules.length === 0 ? <p className="text-muted-foreground">No activities scheduled today.</p> : schedules.slice(0, 3).map((item) => (
-            <div
-              key={item.id}
-              className={cn(
-                "flex items-center p-4 rounded-xl border border-border/50 bg-secondary/20",
-                item.isCompleted && "opacity-60"
-              )}
-            >
-              <div className="w-20 shrink-0 text-lg font-semibold">
-                {item.time}
-              </div>
-              <div className="flex-1 text-lg sm:text-xl font-medium px-4">
-                {item.title}
-              </div>
-              <div className="shrink-0">
+    <section className="flex h-full flex-col rounded-2xl border border-white/10 bg-[#111827] p-6">
+      <h2 className="text-xl font-semibold text-foreground">Today&apos;s Schedule</h2>
+      <div className="mt-5 flex flex-1 flex-col items-center justify-center gap-5">
+        {schedules.length === 0 ? (
+          <>
+            <div className="relative">
+              <span className="absolute inset-0 rounded-full bg-primary/20 blur-2xl" />
+              <CalendarCheck className="relative size-24 text-primary" strokeWidth={1.25} />
+            </div>
+            <p className="text-center text-zinc-400">No activities scheduled today.</p>
+          </>
+        ) : (
+          <div className="w-full space-y-3">
+            {schedules.slice(0, 3).map((item) => (
+              <div
+                key={item.id}
+                className={cn(
+                  "flex items-center rounded-xl border border-white/8 bg-black/30 p-3",
+                  item.isCompleted && "opacity-60",
+                )}
+              >
+                <div className="w-20 shrink-0 text-sm font-semibold text-primary">{item.time}</div>
+                <div className="flex-1 px-3 text-base font-medium">{item.title}</div>
                 {savingId === item.id ? (
-                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                  <Loader2 className="size-6 animate-spin text-primary" />
                 ) : item.isCompleted ? (
-                  <CheckCircle2 className="w-8 h-8 text-primary" />
+                  <CheckCircle2 className="size-6 text-primary" />
                 ) : (
-                  <button type="button" aria-label={`Mark ${item.title} complete`} onClick={() => onToggleComplete(item.id)}><Circle className="w-8 h-8 text-muted-foreground" /></button>
+                  <button type="button" aria-label={`Mark ${item.title} complete`} onClick={() => onToggleComplete(item.id)}>
+                    <Circle className="size-6 text-zinc-500" />
+                  </button>
                 )}
               </div>
-            </div>
-          ))}
-        </div>
-        <Button asChild variant="outline" size="xl" className="w-full rounded-xl text-lg h-16">
-          <Link to="/patient/schedule">View Full Schedule</Link>
-        </Button>
-      </CardContent>
-    </Card>
+            ))}
+          </div>
+        )}
+        <Link
+          to="/patient/schedule"
+          className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary text-base font-semibold text-primary-foreground hover:bg-primary/90"
+        >
+          View Full Schedule
+          <ArrowRight className="size-4" />
+        </Link>
+      </div>
+    </section>
   )
 }

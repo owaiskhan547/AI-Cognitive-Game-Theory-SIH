@@ -5,9 +5,9 @@ import { mockMedications, mockCaregiverStats } from "@/lib/mock-data";
 
 export function AdherenceCard({ activeMedications }: { activeMedications?: number } = {}) {
   return (
-    <Card>
+    <Card className="h-full">
       <CardHeader>
-        <CardTitle>Medication Status & Adherence</CardTitle>
+        <CardTitle className="text-xl">Medication Status & Adherence</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         {activeMedications !== undefined && (

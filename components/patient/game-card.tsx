@@ -1,41 +1,36 @@
-import { Gamepad2, Brain } from "lucide-react"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import { mockGames } from "@/lib/mock-data"
+import { ArrowRight, Brain, Type } from "lucide-react"
 import { Link } from "react-router-dom"
-import { Button } from "@/components/ui/button"
+import { mockGames } from "@/lib/mock-data"
+
+const gameIcons = [Brain, Type]
 
 export function GameCard() {
   const featuredGames = mockGames.slice(0, 2)
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="text-2xl flex items-center gap-3">
-          <Gamepad2 className="w-7 h-7 text-primary" />
-          Brain Games
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="grid gap-4">
-          {featuredGames.map((game) => (
-            <div
-              key={game.id}
-              className="flex items-center gap-4 p-4 rounded-xl border border-border bg-card"
-            >
-              <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                <Brain className="w-8 h-8 text-primary" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-bold">{game.name}</h3>
-                <p className="text-muted-foreground">{game.description}</p>
-              </div>
+    <section className="flex h-full flex-col rounded-2xl border border-white/10 bg-[#111827] p-6">
+      <h2 className="text-xl font-semibold text-foreground">Brain Games</h2>
+      <div className="mt-4 grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2">
+        {featuredGames.map((game, index) => {
+          const Icon = gameIcons[index] || Brain
+          return (
+            <div key={game.id} className="flex flex-col items-center rounded-2xl border border-white/8 bg-black/30 p-4 text-center">
+              <span className="flex size-12 items-center justify-center rounded-full bg-primary/15 text-primary">
+                <Icon className="size-6" />
+              </span>
+              <h3 className="mt-3 font-semibold">{game.name}</h3>
+              <p className="mt-1 line-clamp-2 text-xs text-zinc-400">{game.description}</p>
             </div>
-          ))}
-        </div>
-        <Button asChild size="xl" className="w-full rounded-xl text-lg h-16">
-          <Link to="/patient/games">Play Games</Link>
-        </Button>
-      </CardContent>
-    </Card>
+          )
+        })}
+      </div>
+      <Link
+        to="/patient/games"
+        className="mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary text-base font-semibold text-primary-foreground hover:bg-primary/90"
+      >
+        Play Games
+        <ArrowRight className="size-4" />
+      </Link>
+    </section>
   )
 }

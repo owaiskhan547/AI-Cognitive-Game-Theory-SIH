@@ -19,8 +19,8 @@ export function PageHeader({ title, subtitle, backHref }: PageHeaderProps) {
           </Link>
         </Button>
       )}
-      <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">{title}</h1>
-      {subtitle && <p className="mt-2 text-muted-foreground">{subtitle}</p>}
+      <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-primary">{title}</h1>
+      {subtitle && <p className="mt-2 text-zinc-400">{subtitle}</p>}
     </div>
   )
 }
