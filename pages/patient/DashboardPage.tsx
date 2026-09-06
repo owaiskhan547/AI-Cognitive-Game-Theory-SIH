@@ -1,5 +1,6 @@
-<<<<<<< HEAD
+import { useState } from "react"
 import { GreetingCard } from "@/components/patient/greeting-card"
+import { PatientStatusCard } from "@/components/patient/patient-status-card"
 import { ScheduleCard } from "@/components/patient/schedule-card"
 import { MedicationCard } from "@/components/patient/medication-card"
 import { GameCard } from "@/components/patient/game-card"
@@ -7,45 +8,13 @@ import { MemoryCard } from "@/components/patient/memory-card"
 import { AssistantCard } from "@/components/patient/assistant-card"
 import { SosButton } from "@/components/patient/sos-button"
 import { useAuth } from "@/contexts/AuthContext"
-
-export default function PatientDashboardPage() {
-  const { profile, user } = useAuth()
-  const displayName = (profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'there').trim().split(/\s+/)[0]
-
-  return (
-    <div className="flex flex-col gap-8 pb-8">
-      <GreetingCard name={displayName} />
-      
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <div className="space-y-6">
-          <ScheduleCard />
-          <GameCard />
-        </div>
-        <div className="space-y-6">
-          <MedicationCard />
-          <MemoryCard />
-        </div>
-      </div>
-      
-      <AssistantCard />
-      
-      <div className="pt-4">
-        <SosButton />
-=======
 import { useCurrentPatient, usePatientDashboard } from "@/hooks/usePatientData"
-import { GreetingCard } from "@/components/patient/greeting-card"
-import { PatientStatusCard } from "../../components/patient/patient-status-card"
-import { ScheduleCard } from "@/components/patient/schedule-card"
-import { MedicationCard } from "@/components/patient/medication-card"
-import { MemoryCard } from "@/components/patient/memory-card"
-import { AssistantCard } from "@/components/patient/assistant-card"
-import { SosButton } from "@/components/patient/sos-button"
 import { markScheduleCompleted, markMedicationTaken } from "@/lib/services/patientService"
-import { useState } from "react"
 import { Loader2, AlertCircle, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export default function PatientDashboardPage() {
+  const { profile, user } = useAuth()
   const { patient, loading: patientLoading, error: patientError, refetch: refetchPatient } = useCurrentPatient()
   const { dashboardData, loading: dashLoading, error: dashError, refetch: refetchDash } = usePatientDashboard(patient?.id)
 
@@ -115,18 +84,17 @@ export default function PatientDashboardPage() {
     )
   }
 
-  const patientFullName = patient?.profile?.full_name || "Friend"
-  const firstName = patientFullName.split(" ")[0]
+  const authName = (profile?.full_name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "").trim()
+  const patientFullName = patient?.profile?.full_name || authName || "Friend"
+  const firstName = patientFullName.split(/\s+/)[0]
 
   const todaySchedule = dashboardData?.todaySchedule || []
   const medications = dashboardData?.medications || []
 
   return (
     <div className="flex flex-col gap-8 pb-10">
-      {/* 1. Personalized Greeting with real Supabase Name */}
       <GreetingCard name={firstName} />
 
-      {/* 2. Today's Progress / Patient Status Summary Card */}
       <PatientStatusCard
         totalTasks={dashboardData?.totalTasks || 0}
         completedTasks={dashboardData?.completedTasks || 0}
@@ -135,7 +103,6 @@ export default function PatientDashboardPage() {
         medicationsTaken={dashboardData?.medicationsTaken || 0}
       />
 
-      {/* 3. Schedule & Medication Columns */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         <div className="space-y-6">
           <ScheduleCard
@@ -143,7 +110,7 @@ export default function PatientDashboardPage() {
             onToggleComplete={handleToggleSchedule}
             savingId={savingScheduleId}
           />
-          {/* Teammate Game module card (kept intact) */}
+          <GameCard />
         </div>
 
         <div className="space-y-6">
@@ -152,18 +119,14 @@ export default function PatientDashboardPage() {
             onTakeMedication={handleTakeMedication}
             savingId={savingMedId}
           />
-          {/* Teammate Memory module card (kept intact) */}
           <MemoryCard />
         </div>
       </div>
 
-      {/* 4. Teammate Assistant card (kept intact) */}
       <AssistantCard />
 
-      {/* 5. Emergency SOS Card */}
       <div className="pt-2">
         <SosButton patientId={patient?.id} />
->>>>>>> c803a0274886f346c6bb60935235b314baec755d
       </div>
     </div>
   )

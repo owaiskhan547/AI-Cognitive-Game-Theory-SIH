@@ -12,30 +12,31 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { Brain, LayoutDashboard, TrendingUp, Bell, FileText, User, LogOut } from "lucide-react";
-<<<<<<< HEAD
+import { Brain, LayoutDashboard, TrendingUp, Bell, FileText, User, LogOut, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCaregiverPatients } from "@/features/caregiver/context";
-=======
 import { mockPatient } from "@/lib/mock-data";
->>>>>>> c803a0274886f346c6bb60935235b314baec755d
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 
 export function CaregiverSidebar() {
-<<<<<<< HEAD
-  const { profile, signOut } = useAuth();
-  const { selectedPatient } = useCaregiverPatients();
-=======
->>>>>>> c803a0274886f346c6bb60935235b314baec755d
   const location = useLocation();
   const pathname = location.pathname;
+  const { profile, user, signOut } = useAuth();
+  const { selectedPatient } = useCaregiverPatients();
+
+  const caregiverName = profile?.full_name || user?.user_metadata?.full_name || "Caregiver";
+  const patientName =
+    selectedPatient?.fullName ||
+    (profile?.role === "patient" ? profile.full_name : null) ||
+    mockPatient.name;
 
   const overviewItems = [
     { title: "Dashboard", url: "/caregiver/dashboard", icon: LayoutDashboard },
     { title: "Progress", url: "/caregiver/progress", icon: TrendingUp },
     { title: "Reminders", url: "/caregiver/reminders", icon: Bell },
     { title: "Reports", url: "/caregiver/reports", icon: FileText },
+    { title: "Insights", url: "/caregiver/insights", icon: Sparkles },
   ];
 
   return (
@@ -76,11 +77,7 @@ export function CaregiverSidebar() {
                 <SidebarMenuButton asChild isActive={pathname === "/caregiver/dashboard"}>
                   <Link to="/caregiver/dashboard">
                     <User />
-<<<<<<< HEAD
-                    <span>{selectedPatient?.fullName ?? 'No patient selected'}</span>
-=======
-                    <span>{mockPatient.name}</span>
->>>>>>> c803a0274886f346c6bb60935235b314baec755d
+                    <span>{patientName || "No patient selected"}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -93,30 +90,24 @@ export function CaregiverSidebar() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
-<<<<<<< HEAD
-              <AvatarImage src={profile?.avatar_url ?? undefined} alt="Caregiver" />
-              <AvatarFallback>{profile?.full_name?.[0] ?? 'C'}</AvatarFallback>
+              <AvatarImage src={profile?.avatar_url || ""} alt={caregiverName} />
+              <AvatarFallback>{caregiverName.charAt(0)}</AvatarFallback>
             </Avatar>
             <div className="flex flex-col">
-              <span className="text-sm font-medium">{profile?.full_name ?? 'Caregiver'}</span>
+              <span className="text-sm font-medium">{caregiverName}</span>
               <span className="text-xs text-muted-foreground">Caregiver</span>
             </div>
           </div>
-          <Button variant="ghost" size="icon" onClick={() => void signOut()} asChild>
-=======
-              <AvatarImage src="" alt="Caregiver" />
-              <AvatarFallback>PK</AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col">
-              <span className="text-sm font-medium">Dr. Priya Kumar</span>
-              <span className="text-xs text-muted-foreground">Caregiver</span>
-            </div>
-          </div>
-          <Button variant="ghost" size="icon" asChild>
->>>>>>> c803a0274886f346c6bb60935235b314baec755d
-            <Link to="/" title="Log Out">
-              <LogOut className="h-4 w-4" />
-            </Link>
+          <Button
+            variant="ghost"
+            size="icon"
+            title="Log Out"
+            onClick={async () => {
+              await signOut();
+              window.location.href = "/login";
+            }}
+          >
+            <LogOut className="h-4 w-4" />
           </Button>
         </div>
       </SidebarFooter>
