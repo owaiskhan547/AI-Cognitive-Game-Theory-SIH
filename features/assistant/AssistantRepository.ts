@@ -1,7 +1,7 @@
 import { ConversationManager } from './conversation'
 import { deepgramService } from './deepgram'
 import { geminiService } from './gemini'
-import { mockPatientContext } from './mockPatientContext'
+import { patientContextService } from './patientContextService';
 import { SYSTEM_PROMPT } from './prompt'
 import { buildPrompt } from './promptBuilder'
 import type { VoiceAssistantResponse } from './types'
@@ -27,7 +27,7 @@ export class AssistantRepository {
       // 3. Build the prompt
       const prompt = buildPrompt(
         SYSTEM_PROMPT,
-        mockPatientContext,
+        await patientContextService.getCurrentPatient(),
         recentConversation,
         userMessage
       )
@@ -58,7 +58,7 @@ export class AssistantRepository {
       const recentConversation = this.conversationManager.getRecentConversation()
       const prompt = buildPrompt(
         SYSTEM_PROMPT,
-        mockPatientContext,
+        await patientContextService.getCurrentPatient(),
         recentConversation,
         transcript
       )
