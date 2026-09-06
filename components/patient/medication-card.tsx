@@ -1,20 +1,16 @@
-"use client"
-
 import { Pill, CheckCircle2 } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import { mockMedications, markMedicationTaken } from "@/lib/mock-data"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { useState } from "react"
 import { cn } from "@/lib/utils"
+import type { MedicationWithLogStatus } from "@/lib/services/patientService"
 
-export function MedicationCard() {
-  const [meds, setMeds] = useState(mockMedications.slice(0, 2))
+interface MedicationCardProps {
+  medications: MedicationWithLogStatus[]
+  onTakeMedication: (medicationId: string) => Promise<void>
+  savingId: string | null
+}
 
-  const handleTake = (id: string) => {
-    markMedicationTaken(id)
-    setMeds(meds.map(m => m.id === id ? { ...m, taken: true } : m))
-  }
+export function MedicationCard({ medications, onTakeMedication, savingId }: MedicationCardProps) {
 
   return (
     <Card className="w-full">
@@ -25,31 +21,32 @@ export function MedicationCard() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {meds.map((med) => (
+        {medications.length === 0 ? <p className="text-muted-foreground">No active medications.</p> : medications.slice(0, 3).map((med) => (
           <div
             key={med.id}
             className={cn(
               "flex flex-col sm:flex-row sm:items-center gap-4 p-5 rounded-xl border",
-              med.taken ? "bg-secondary/20 border-border/50" : "bg-card border-border"
+              med.isTakenToday ? "bg-secondary/20 border-border/50" : "bg-card border-border"
             )}
           >
             <div className="flex-1">
               <h3 className="text-xl font-bold">{med.name}</h3>
-              <p className="text-lg text-muted-foreground">{med.dosage} • {med.time}</p>
+              <p className="text-lg text-muted-foreground">{med.dosage} • {med.frequency}</p>
             </div>
             <div className="shrink-0 w-full sm:w-auto mt-2 sm:mt-0">
-              {med.taken ? (
+              {med.isTakenToday ? (
                 <div className="flex items-center justify-center sm:justify-start gap-2 text-primary font-medium p-4 bg-primary/10 rounded-xl w-full">
                   <CheckCircle2 className="w-6 h-6" />
                   <span className="text-lg">Taken</span>
                 </div>
               ) : (
-                <Button 
-                  onClick={() => handleTake(med.id)} 
+                <Button
+                  onClick={() => onTakeMedication(med.id)}
+                  disabled={savingId === med.id}
                   size="xl" 
                   className="w-full sm:w-auto h-16 rounded-xl text-lg px-8"
                 >
-                  Take Now
+                  {savingId === med.id ? "Saving..." : "Take Now"}
                 </Button>
               )}
             </div>
