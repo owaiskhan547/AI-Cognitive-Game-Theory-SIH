@@ -21,6 +21,7 @@ import PatientSchedulePage from '@/pages/patient/SchedulePage'
 
 // Caregiver Pages
 import CaregiverDashboardPage from '@/pages/caregiver/DashboardPage'
+import CaregiverInsightsPage from '@/pages/caregiver/InsightsPage'
 import CaregiverProgressPage from '@/pages/caregiver/ProgressPage'
 import CaregiverRemindersPage from '@/pages/caregiver/RemindersPage'
 import CaregiverReportsPage from '@/pages/caregiver/ReportsPage'
@@ -66,6 +67,7 @@ export function App() {
           >
             <Route index element={<Navigate to="/caregiver/dashboard" replace />} />
             <Route path="dashboard" element={<CaregiverDashboardPage />} />
+            <Route path="insights" element={<CaregiverInsightsPage />} />
             <Route path="progress" element={<CaregiverProgressPage />} />
             <Route path="reminders" element={<CaregiverRemindersPage />} />
             <Route path="reports" element={<CaregiverReportsPage />} />

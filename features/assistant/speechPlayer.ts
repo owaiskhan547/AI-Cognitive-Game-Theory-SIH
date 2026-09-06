@@ -3,12 +3,22 @@ export class SpeechPlayer {
 	private currentObjectUrl: string | null = null
 	private playbackReject: ((reason?: unknown) => void) | null = null
 
-	async play(audio: Blob): Promise<void> {
+	async play(audio: Blob, fallbackText?: string): Promise<void> {
 		this.stop()
+
+		if (!audio || audio.size === 0) {
+			if (fallbackText && typeof window !== 'undefined' && 'speechSynthesis' in window) {
+				const utterance = new SpeechSynthesisUtterance(fallbackText)
+				utterance.rate = 0.9
+				window.speechSynthesis.speak(utterance)
+			}
+			return
+		}
+
 		const objectUrl = URL.createObjectURL(audio)
 		this.currentObjectUrl = objectUrl
 
-		await new Promise<void>((resolve, reject) => {
+		await new Promise<void>((resolve) => {
 			const cleanup = (): void => {
 				if (this.currentObjectUrl !== objectUrl) return
 
@@ -25,17 +35,27 @@ export class SpeechPlayer {
 			}
 			this.audio.onerror = () => {
 				cleanup()
-				reject(new Error('Audio playback failed.'))
+				if (fallbackText && typeof window !== 'undefined' && 'speechSynthesis' in window) {
+					const utterance = new SpeechSynthesisUtterance(fallbackText)
+					utterance.rate = 0.9
+					window.speechSynthesis.speak(utterance)
+				}
+				resolve()
 			}
-			this.playbackReject = (reason) => {
+			this.playbackReject = () => {
 				cleanup()
-				reject(reason ?? new Error('Audio playback stopped.'))
+				resolve()
 			}
 			this.audio.src = objectUrl
 
-			void this.audio.play().catch(() => {
+			this.audio.play().catch(() => {
 				cleanup()
-				reject(new Error('Audio playback failed.'))
+				if (fallbackText && typeof window !== 'undefined' && 'speechSynthesis' in window) {
+					const utterance = new SpeechSynthesisUtterance(fallbackText)
+					utterance.rate = 0.9
+					window.speechSynthesis.speak(utterance)
+				}
+				resolve()
 			})
 		})
 	}

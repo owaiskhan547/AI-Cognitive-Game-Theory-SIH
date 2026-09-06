@@ -2,18 +2,27 @@ import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ActivityTable } from "@/components/caregiver/activity-table";
-import { Download } from "lucide-react";
+import { Download, Sparkles } from "lucide-react";
 import { mockCaregiverStats } from "@/lib/mock-data";
+import { Link } from "react-router-dom";
 
 export default function CaregiverReportsPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <PageHeader title="Reports" subtitle="Weekly and monthly summaries" />
-        <Button variant="outline">
-          <Download className="mr-2 h-4 w-4" />
-          Export Report
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button asChild className="gap-2 bg-gradient-to-r from-primary to-indigo-600 hover:from-primary/90 hover:to-indigo-500">
+            <Link to="/caregiver/insights">
+              <Sparkles className="w-4 h-4" />
+              Caregiver Insights
+            </Link>
+          </Button>
+          <Button variant="outline">
+            <Download className="mr-2 h-4 w-4" />
+            Export Report
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2">

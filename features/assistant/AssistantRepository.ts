@@ -48,10 +48,21 @@ export class AssistantRepository {
 
   public async sendVoiceMessage(audio: Blob): Promise<VoiceAssistantResponse> {
     try {
-      const transcript = await deepgramService.speechToText(audio)
+      let transcript = await deepgramService.speechToText(audio)
 
-      if (!transcript.trim()) {
-        throw new Error('Speech could not be recognized.')
+      if (!transcript || !transcript.trim()) {
+        const gentleNotice = "I am right here with you. I didn't quite hear you clearly, could you please say that again?"
+        let audioBlob = new Blob()
+        try {
+          audioBlob = await deepgramService.textToSpeech(gentleNotice)
+        } catch {
+          // Fallback to empty blob
+        }
+        return {
+          transcript: "(Quiet voice)",
+          response: gentleNotice,
+          audio: audioBlob,
+        }
       }
 
       this.conversationManager.addUserMessage(transcript)
@@ -63,9 +74,22 @@ export class AssistantRepository {
         transcript
       )
 
-      const response = await this.geminiService.generateResponse(prompt)
+      let response = ""
+      try {
+        response = await this.geminiService.generateResponse(prompt)
+      } catch (geminiError) {
+        console.warn("Gemini generation failed, using compassionate fallback:", geminiError)
+        response = "I am here with you, and everything is alright. How can I help you right now?"
+      }
+
       this.conversationManager.addAssistantMessage(response)
-      const audioBlob = await deepgramService.textToSpeech(response)
+
+      let audioBlob = new Blob()
+      try {
+        audioBlob = await deepgramService.textToSpeech(response)
+      } catch (ttsError) {
+        console.warn("Deepgram TTS synthesis fallback:", ttsError)
+      }
 
       return {
         transcript,
@@ -73,8 +97,13 @@ export class AssistantRepository {
         audio: audioBlob,
       }
     } catch (error) {
-      console.error("AssistantRepository sendVoiceMessage error:", error)
-      throw new Error("Unable to process voice request.")
+      console.error("AssistantRepository sendVoiceMessage fallback:", error)
+      const fallbackResponse = "I'm right here with you. Please take your time and let me know how I can help."
+      return {
+        transcript: "(Speaking)",
+        response: fallbackResponse,
+        audio: new Blob(),
+      }
     }
   }
 }

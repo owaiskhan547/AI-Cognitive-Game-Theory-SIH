@@ -1,52 +1,69 @@
-import { DeepgramClient } from '@deepgram/sdk'
-
 /**
  * Service class for interacting with Deepgram Voice AI (STT & TTS).
+ * Uses direct fetch for maximum reliability across browsers without Node SDK overhead.
  */
 export class DeepgramService {
-  private client: DeepgramClient | null = null
+  private apiKey: string = ''
 
   constructor() {
-    const key = import.meta.env.VITE_DEEPGRAM_API_KEY
+    const key =
+      (typeof import.meta !== 'undefined' && import.meta.env?.VITE_DEEPGRAM_API_KEY) ||
+      (typeof process !== 'undefined' && process.env?.VITE_DEEPGRAM_API_KEY) ||
+      ''
 
     if (key && typeof key === 'string' && key.trim() !== '') {
-      this.client = new DeepgramClient({ apiKey: key.trim() })
+      this.apiKey = key.trim()
     }
   }
 
   /**
-   * Transcribes speech audio Blob to text using Deepgram.
+   * Transcribes speech audio Blob to text using Deepgram REST API.
    *
    * @param audio - Audio recording as a Blob.
    * @returns Trimmed transcript string, or empty string if none found.
    */
   async speechToText(audio: Blob): Promise<string> {
     if (!audio || audio.size === 0) {
-      throw new Error('Audio data cannot be empty.')
+      return ''
     }
-    if (!this.client) {
-      throw new Error('Missing Deepgram API Key: Please define VITE_DEEPGRAM_API_KEY in your .env.local file.')
+
+    if (!this.apiKey) {
+      console.warn('Missing Deepgram API Key. Set VITE_DEEPGRAM_API_KEY in your .env.local file.')
+      return ''
     }
 
     try {
-      const response = await this.client.listen.v1.media.transcribeFile(audio, {
-        model: 'nova-2',
-        smart_format: true,
-      })
+      const response = await fetch(
+        'https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&punctuate=true',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Token ${this.apiKey}`,
+            'Content-Type': audio.type || 'audio/webm',
+          },
+          body: audio,
+        }
+      )
 
-      if ('results' in response && response.results?.channels?.[0]?.alternatives?.[0]?.transcript) {
-        return response.results.channels[0].alternatives[0].transcript.trim()
+      if (!response.ok) {
+        const errText = await response.text()
+        console.error('Deepgram STT error response:', response.status, errText)
+        return ''
       }
 
-      return ''
+      const result = await response.json()
+      const transcript =
+        result?.results?.channels?.[0]?.alternatives?.[0]?.transcript?.trim() || ''
+
+      return transcript
     } catch (error) {
       console.error('Deepgram speechToText error:', error)
-      throw new Error('Failed to transcribe audio.')
+      return ''
     }
   }
 
   /**
-   * Converts text to natural speech audio using Deepgram TTS.
+   * Converts text to natural speech audio using Deepgram TTS REST API.
    *
    * @param text - Text to synthesize.
    * @returns Synthesized audio as a Blob.
@@ -55,27 +72,39 @@ export class DeepgramService {
     if (!text || text.trim() === '') {
       throw new Error('Text to synthesize cannot be empty.')
     }
-    if (!this.client) {
+
+    if (!this.apiKey) {
       throw new Error('Missing Deepgram API Key: Please define VITE_DEEPGRAM_API_KEY in your .env.local file.')
     }
 
     try {
-      const response = await this.client.speak.v1.audio.generate({
-        text: text.trim(),
-        model: 'aura-asteria-en',
-      })
-
-      if (response && typeof response.blob === 'function') {
-        const audioBlob = await response.blob()
-        if (audioBlob) {
-          return audioBlob
+      const response = await fetch(
+        'https://api.deepgram.com/v1/speak?model=aura-asteria-en&encoding=mp3',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Token ${this.apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ text: text.trim() }),
         }
+      )
+
+      if (!response.ok) {
+        const errText = await response.text()
+        console.error('Deepgram TTS error response:', response.status, errText)
+        throw new Error(`Deepgram TTS failed: ${response.status}`)
       }
 
-      throw new Error('Deepgram returned an empty audio response.')
+      const audioBlob = await response.blob()
+      if (!audioBlob || audioBlob.size === 0) {
+        throw new Error('Deepgram returned an empty audio response.')
+      }
+
+      return audioBlob
     } catch (error) {
       console.error('Deepgram textToSpeech error:', error)
-      throw new Error('Failed to synthesize speech.')
+      throw error
     }
   }
 }

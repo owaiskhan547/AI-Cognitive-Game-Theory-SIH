@@ -164,30 +164,31 @@ export default function PatientAssistantPage() {
 
     setMessages((prev) => [...prev, userMsg, assistantMsg])
 
-    // Play the AI voice without blocking the UI
-    speechPlayer.play(result.audio).catch((error) => {
-  console.error("Speech playback failed:", error)
-})
+    // Play the AI voice without blocking the UI, with speech synthesis fallback
+    speechPlayer.play(result.audio, result.response).catch((error) => {
+      console.warn("Speech playback notice:", error)
+    })
   } catch (error) {
     console.error("Failed to process voice message:", error)
 
     const friendlyError =
-      "I'm having trouble processing your voice right now. Please try again."
+      "I am right here with you. I didn't quite hear you clearly—could you please say that again?"
 
-    setErrorMessage(friendlyError)
+    setErrorMessage(null)
 
     const errorMsg: Message = {
-      id: `${Date.now()}-voice-error`,
+      id: `${Date.now()}-voice-notice`,
       role: "assistant",
       content: friendlyError,
       time: new Date().toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
       }),
-      isError: true,
+      isError: false,
     }
 
     setMessages((prev) => [...prev, errorMsg])
+    speechPlayer.play(new Blob(), friendlyError)
   } finally {
     setIsRecording(false)
     setIsLoading(false)

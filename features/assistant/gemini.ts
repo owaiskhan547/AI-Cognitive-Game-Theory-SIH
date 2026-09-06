@@ -30,10 +30,18 @@ export class GeminiService {
     }
 
     try {
-      const response = await this.client.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt.trim(),
-      })
+      let response
+      try {
+        response = await this.client.models.generateContent({
+          model: 'gemini-3.6-flash',
+          contents: prompt.trim(),
+        })
+      } catch {
+        response = await this.client.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: prompt.trim(),
+        })
+      }
 
       const text = response.text?.trim()
 

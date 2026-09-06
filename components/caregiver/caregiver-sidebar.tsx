@@ -12,7 +12,7 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { Brain, LayoutDashboard, TrendingUp, Bell, FileText, User, LogOut } from "lucide-react";
+import { Brain, LayoutDashboard, TrendingUp, Bell, FileText, User, LogOut, Sparkles } from "lucide-react";
 import { mockPatient } from "@/lib/mock-data";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ export function CaregiverSidebar() {
 
   const overviewItems = [
     { title: "Dashboard", url: "/caregiver/dashboard", icon: LayoutDashboard },
+    { title: "Insights", url: "/caregiver/insights", icon: Sparkles },
     { title: "Progress", url: "/caregiver/progress", icon: TrendingUp },
     { title: "Reminders", url: "/caregiver/reminders", icon: Bell },
     { title: "Reports", url: "/caregiver/reports", icon: FileText },
