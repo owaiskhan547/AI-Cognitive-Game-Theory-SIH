@@ -32,9 +32,19 @@ export class VoiceRecorder {
 
 		try {
 			this.chunks = []
-			this.mediaRecorder = new MediaRecorder(this.stream)
+			const mimeType = [
+				'audio/webm;codecs=opus',
+				'audio/webm',
+				'audio/ogg;codecs=opus',
+				'audio/mp4',
+			].find((type) => typeof MediaRecorder.isTypeSupported === 'function' && MediaRecorder.isTypeSupported(type))
+
+			this.mediaRecorder = mimeType
+				? new MediaRecorder(this.stream, { mimeType })
+				: new MediaRecorder(this.stream)
+
 			this.mediaRecorder.addEventListener('dataavailable', (event) => {
-				if (event.data.size > 0) {
+				if (event.data && event.data.size > 0) {
 					this.chunks.push(event.data)
 				}
 			})
@@ -63,7 +73,8 @@ export class VoiceRecorder {
 				mediaRecorder.addEventListener('error', () => reject(new Error('Unable to stop recording.')), { once: true })
 				mediaRecorder.stop()
 			})
-			const audioBlob = new Blob(this.chunks, { type: 'audio/webm' })
+			const mimeType = mediaRecorder.mimeType || 'audio/webm'
+			const audioBlob = new Blob(this.chunks, { type: mimeType })
 			return audioBlob
 		} catch {
 			throw new Error('Unable to stop recording.')
