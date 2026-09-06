@@ -28,7 +28,7 @@ export default function PatientProfilePage() {
               <Avatar className="w-24 h-24">
                 <AvatarImage src={profile?.avatar_url || mockPatient.avatar} alt={userName} />
                 <AvatarFallback className="text-2xl">
-                  {userName.split(" ").map(n => n[0]).join("")}
+                  {userName.split(" ").map((n: string) => n[0]).join("")}
                 </AvatarFallback>
               </Avatar>
               <div>

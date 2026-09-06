@@ -12,8 +12,6 @@ const supabaseAnonKey =
   (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_SUPABASE_ANON_KEY) ||
   ''
 
-<<<<<<< HEAD
-=======
 const placeholderValues = [
   'placeholder-project.supabase.co',
   'your-project-id.supabase.co',
@@ -34,7 +32,6 @@ export function assertSupabaseConfigured() {
   }
 }
 
->>>>>>> c803a0274886f346c6bb60935235b314baec755d
 /**
  * Standard pure React client-side Supabase client with typed schema and persistent localStorage auth.
  */

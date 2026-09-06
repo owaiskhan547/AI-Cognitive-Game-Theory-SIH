@@ -8,7 +8,25 @@ import { memoryService, type Memory } from "@/lib/supabase/services/memory"
 import { useAuth } from "@/contexts/AuthContext"
 import { useCurrentPatient } from "@/hooks/usePatientData"
 import { updateMemory } from "@/lib/services/patientService"
-import { mockMemories } from "@/lib/mock-data"
+// Inline mock memories for development
+const mockMemories = [
+  {
+    id: "mem1",
+    patient_id: "demo-patient",
+    title: "First Memory",
+    description: "Visited the park with family.",
+    media_url: null,
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: "mem2",
+    patient_id: "demo-patient",
+    title: "Medical Checkup",
+    description: "Annual health checkup results.",
+    media_url: null,
+    created_at: new Date().toISOString(),
+  },
+];
 import { toast } from "sonner"
 
 export default function PatientMemoriesPage() {

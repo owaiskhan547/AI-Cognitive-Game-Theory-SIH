@@ -5,7 +5,8 @@ import { Brain, User, Mail, Lock, Eye, EyeOff, Check, ShieldCheck, Heart, ArrowR
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useAuth } from "@/contexts/AuthContext"
+import { useAuth } from "@/contexts/AuthContext";
+import { isSupabaseConfigured } from "@/lib/supabase/client";
 
 function GoogleIcon() {
   return (
@@ -65,13 +66,10 @@ export default function SignupPage() {
         fullName: name,
         role,
       })
-<<<<<<< HEAD
-=======
       if (!isSupabaseConfigured) {
         navigate("/login", { replace: true })
         return
       }
->>>>>>> c803a0274886f346c6bb60935235b314baec755d
       if (role === "patient") {
         navigate("/patient/dashboard")
       } else {

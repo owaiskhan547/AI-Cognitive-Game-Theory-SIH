@@ -13,10 +13,7 @@ import SignupPage from '@/pages/SignupPage'
 import PatientDashboardPage from '@/pages/patient/DashboardPage'
 import PatientAssistantPage from '@/pages/patient/AssistantPage'
 import PatientEmergencyPage from '@/pages/patient/EmergencyPage'
-<<<<<<< HEAD
 import PatientGamesPage from '@/pages/patient/GamesPage'
-=======
->>>>>>> c803a0274886f346c6bb60935235b314baec755d
 import PatientMedicationsPage from '@/pages/patient/MedicationsPage'
 import PatientMemoriesPage from '@/pages/patient/MemoriesPage'
 import PatientProfilePage from '@/pages/patient/ProfilePage'
@@ -24,6 +21,7 @@ import PatientSchedulePage from '@/pages/patient/SchedulePage'
 
 // Caregiver Pages
 import CaregiverDashboardPage from '@/pages/caregiver/DashboardPage'
+import CaregiverInsightsPage from '@/pages/caregiver/InsightsPage'
 import CaregiverProgressPage from '@/pages/caregiver/ProgressPage'
 import CaregiverRemindersPage from '@/pages/caregiver/RemindersPage'
 import CaregiverReportsPage from '@/pages/caregiver/ReportsPage'
@@ -51,10 +49,7 @@ export function App() {
             <Route path="dashboard" element={<PatientDashboardPage />} />
             <Route path="assistant" element={<PatientAssistantPage />} />
             <Route path="emergency" element={<PatientEmergencyPage />} />
-<<<<<<< HEAD
             <Route path="games" element={<PatientGamesPage />} />
-=======
->>>>>>> c803a0274886f346c6bb60935235b314baec755d
             <Route path="medications" element={<PatientMedicationsPage />} />
             <Route path="memories" element={<PatientMemoriesPage />} />
             <Route path="profile" element={<PatientProfilePage />} />
@@ -72,6 +67,7 @@ export function App() {
           >
             <Route index element={<Navigate to="/caregiver/dashboard" replace />} />
             <Route path="dashboard" element={<CaregiverDashboardPage />} />
+            <Route path="insights" element={<CaregiverInsightsPage />} />
             <Route path="progress" element={<CaregiverProgressPage />} />
             <Route path="reminders" element={<CaregiverRemindersPage />} />
             <Route path="reports" element={<CaregiverReportsPage />} />

@@ -33,10 +33,10 @@ export function CaregiverSidebar() {
 
   const overviewItems = [
     { title: "Dashboard", url: "/caregiver/dashboard", icon: LayoutDashboard },
+    { title: "Insights", url: "/caregiver/insights", icon: Sparkles },
     { title: "Progress", url: "/caregiver/progress", icon: TrendingUp },
     { title: "Reminders", url: "/caregiver/reminders", icon: Bell },
     { title: "Reports", url: "/caregiver/reports", icon: FileText },
-    { title: "Insights", url: "/caregiver/insights", icon: Sparkles },
   ];
 
   return (

@@ -299,15 +299,44 @@ export type Database = {
           },
         ]
       }
-<<<<<<< HEAD
       game_scores: {
-        Row: { id: string; patient_id: string; game_type: 'memory_match' | 'sequence_recall' | 'pattern_recall' | 'word_recall'; difficulty: 'easy' | 'medium' | 'hard'; score: number; duration_seconds: number; completed_at: string }
-        Insert: { id?: string; patient_id: string; game_type: 'memory_match' | 'sequence_recall' | 'pattern_recall' | 'word_recall'; difficulty: 'easy' | 'medium' | 'hard'; score: number; duration_seconds: number; completed_at?: string }
-        Update: { id?: string; patient_id?: string; game_type?: 'memory_match' | 'sequence_recall' | 'pattern_recall' | 'word_recall'; difficulty?: 'easy' | 'medium' | 'hard'; score?: number; duration_seconds?: number; completed_at?: string }
-        Relationships: [{ foreignKeyName: 'game_scores_patient_id_fkey'; columns: ['patient_id']; isOneToOne: false; referencedRelation: 'patients'; referencedColumns: ['id'] }]
+        Row: {
+          id: string
+          patient_id: string
+          game_type: 'memory_match' | 'sequence_recall' | 'pattern_recall' | 'word_recall'
+          difficulty: 'easy' | 'medium' | 'hard'
+          score: number
+          duration_seconds: number
+          completed_at: string
+        }
+        Insert: {
+          id?: string
+          patient_id: string
+          game_type: 'memory_match' | 'sequence_recall' | 'pattern_recall' | 'word_recall'
+          difficulty: 'easy' | 'medium' | 'hard'
+          score: number
+          duration_seconds: number
+          completed_at?: string
+        }
+        Update: {
+          id?: string
+          patient_id?: string
+          game_type?: 'memory_match' | 'sequence_recall' | 'pattern_recall' | 'word_recall'
+          difficulty?: 'easy' | 'medium' | 'hard'
+          score?: number
+          duration_seconds?: number
+          completed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'game_scores_patient_id_fkey'
+            columns: ['patient_id']
+            isOneToOne: false
+            referencedRelation: 'patients'
+            referencedColumns: ['id']
+          },
+        ]
       }
-=======
->>>>>>> c803a0274886f346c6bb60935235b314baec755d
       assistant_conversations: {
         Row: {
           id: string
@@ -401,6 +430,129 @@ export type Database = {
           },
         ]
       }
+      // Newly added tables
+      medication_logs: {
+        Row: {
+          id: string;
+          patient_id: string;
+          medication_id: string;
+          scheduled_for: string; // ISO timestamp
+          status: 'taken' | 'missed' | 'skipped' | null;
+          taken_at: string | null;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          patient_id: string;
+          medication_id: string;
+          scheduled_for: string;
+          status?: 'taken' | 'missed' | 'skipped' | null;
+          taken_at?: string | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          patient_id?: string;
+          medication_id?: string;
+          scheduled_for?: string;
+          status?: 'taken' | 'missed' | 'skipped' | null;
+          taken_at?: string | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'medication_logs_patient_id_fkey';
+            columns: ['patient_id'];
+            isOneToOne: false;
+            referencedRelation: 'patients';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'medication_logs_medication_id_fkey';
+            columns: ['medication_id'];
+            isOneToOne: false;
+            referencedRelation: 'medications';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
+      schedule_completions: {
+        Row: {
+          id: string;
+          patient_id: string;
+          schedule_id: string;
+          status: 'completed' | 'skipped' | null;
+          completed_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          patient_id: string;
+          schedule_id: string;
+          status?: 'completed' | 'skipped' | null;
+          completed_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          patient_id?: string;
+          schedule_id?: string;
+          status?: 'completed' | 'skipped' | null;
+          completed_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'schedule_completions_patient_id_fkey';
+            columns: ['patient_id'];
+            isOneToOne: false;
+            referencedRelation: 'patients';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'schedule_completions_schedule_id_fkey';
+            columns: ['schedule_id'];
+            isOneToOne: false;
+            referencedRelation: 'schedules';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
+      emergency_events: {
+        Row: {
+          id: string;
+          patient_id: string;
+          type: string;
+          description: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          patient_id: string;
+          type: string;
+          description?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          patient_id?: string;
+          type?: string;
+          description?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'emergency_events_patient_id_fkey';
+            columns: ['patient_id'];
+            isOneToOne: false;
+            referencedRelation: 'patients';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
     }
     Views: {
       [_ in never]: never

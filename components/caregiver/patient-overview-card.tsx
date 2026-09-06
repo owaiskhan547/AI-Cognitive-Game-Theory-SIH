@@ -1,17 +1,63 @@
-<<<<<<< HEAD
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'; import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'; import type { PatientOverview } from '@/features/caregiver/types'
-export function PatientOverviewCard({ patient }: { patient: PatientOverview }) { return <Card><CardHeader><CardTitle>Patient Overview</CardTitle></CardHeader><CardContent className="flex items-center gap-4"><Avatar><AvatarImage src={patient.avatarUrl ?? undefined}/><AvatarFallback>{patient.fullName[0]}</AvatarFallback></Avatar><div><p className="font-semibold">{patient.fullName}</p><p className="text-sm text-muted-foreground">Age: {patient.age ?? 'Not available'} · {patient.relationship ?? 'Not specified'}</p><p className="text-sm text-muted-foreground">{patient.medicalNotes ?? 'No medical notes recorded.'}</p></div></CardContent></Card> }
-=======
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { useAuth } from "@/contexts/AuthContext";
 import { mockPatient, mockCaregiverStats } from "@/lib/mock-data";
+import type { PatientOverview } from "@/features/caregiver/types";
+import { formatDistanceToNow } from "date-fns";
 
-export function PatientOverviewCard() {
-  const { profile, user } = useAuth();
-  const patientName = profile?.full_name || user?.user_metadata?.full_name || mockPatient.name;
+export function PatientOverviewCard({ patient }: { patient?: PatientOverview } = {}) {
+  if (patient) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Patient Overview</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex items-center gap-4">
+            <Avatar className="h-16 w-16">
+              <AvatarImage src={patient.avatarUrl ?? undefined} alt={patient.fullName} />
+              <AvatarFallback>{patient.fullName.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <div>
+              <h3 className="text-xl font-bold">{patient.fullName}</h3>
+              <div className="text-sm text-muted-foreground">
+                Age: {patient.age ?? "Not available"} · {patient.relationship ?? "Relationship not specified"}
+              </div>
+              <div className="flex items-center gap-2 mt-1">
+                <Badge variant="secondary">
+                  {patient.latestActivityAt
+                    ? `Active ${formatDistanceToNow(new Date(patient.latestActivityAt), { addSuffix: true })}`
+                    : "No activity yet"}
+                </Badge>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2 text-sm text-muted-foreground">
+            <p><strong>Emergency Contact:</strong> {patient.emergencyContact ?? "Not specified"}</p>
+            <p><strong>Medical Notes:</strong> {patient.medicalNotes ?? "No notes recorded."}</p>
+          </div>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="font-medium">Active Medications</span>
+                <span>{patient.activeMedications}</span>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="font-medium">Upcoming Reminders</span>
+                <span>{patient.upcomingReminders}</span>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
@@ -21,11 +67,11 @@ export function PatientOverviewCard() {
       <CardContent className="space-y-6">
         <div className="flex items-center gap-4">
           <Avatar className="h-16 w-16">
-            <AvatarImage src={profile?.avatar_url || ""} alt={patientName} />
-            <AvatarFallback>{patientName.charAt(0)}</AvatarFallback>
+            <AvatarImage src="" alt={mockPatient.name} />
+            <AvatarFallback>{mockPatient.name.charAt(0)}</AvatarFallback>
           </Avatar>
           <div>
-            <h3 className="text-xl font-bold">{patientName}</h3>
+            <h3 className="text-xl font-bold">{mockPatient.name}</h3>
             <div className="text-sm text-muted-foreground">Age: {mockPatient.age}</div>
             <div className="flex items-center gap-2 mt-1">
               <Badge variant="secondary">{mockPatient.condition}</Badge>
@@ -55,4 +101,3 @@ export function PatientOverviewCard() {
     </Card>
   );
 }
->>>>>>> c803a0274886f346c6bb60935235b314baec755d

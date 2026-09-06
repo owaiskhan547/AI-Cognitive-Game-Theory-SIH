@@ -1030,7 +1030,8 @@ export async function createEmergencyEvent(
     return {
       id: `demo-emergency-${Date.now()}`,
       patient_id: patientId,
-      event_type: event.event_type,
+      type: event.event_type,
+      description: '',
       latitude: event.latitude ?? null,
       longitude: event.longitude ?? null,
       accuracy: event.accuracy ?? null,
@@ -1042,18 +1043,14 @@ export async function createEmergencyEvent(
     } as EmergencyEventRow
   }
 
+  const now = new Date().toISOString();
   const { data, error } = await supabase
     .from('emergency_events')
     .insert({
       patient_id: patientId,
-      event_type: event.event_type,
-      latitude: event.latitude || null,
-      longitude: event.longitude || null,
-      accuracy: event.accuracy || null,
-      location_captured_at: event.latitude ? new Date().toISOString() : null,
-      location_url: event.location_url || null,
-      contact_id: event.contact_id || null,
-      status: event.status || 'triggered',
+      type: event.event_type,
+      description: '',
+      created_at: now,
     })
     .select()
     .single()
