@@ -1,6 +1,6 @@
 import { useCurrentPatient, usePatientDashboard } from "@/hooks/usePatientData"
 import { GreetingCard } from "@/components/patient/greeting-card"
-import { PatientStatusCard } from "@/components/patient/patient-status-card"
+import { PatientStatusCard } from "../../components/patient/patient-status-card"
 import { ScheduleCard } from "@/components/patient/schedule-card"
 import { MedicationCard } from "@/components/patient/medication-card"
 import { MemoryCard } from "@/components/patient/memory-card"
