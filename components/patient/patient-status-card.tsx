@@ -1,4 +1,4 @@
-import { Activity, CheckCircle2, Clock, Pill } from "lucide-react"
+import { CheckCircle2, Clock, Pill } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import type { ScheduleItemWithStatus } from "@/lib/services/patientService"
 
