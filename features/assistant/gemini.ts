@@ -4,18 +4,14 @@ import { GoogleGenAI } from '@google/genai'
  * Service class for interacting with the Google Gemini AI model.
  */
 export class GeminiService {
-  private client: GoogleGenAI
+  private client?: GoogleGenAI
 
   constructor() {
     const key = import.meta.env.VITE_GEMINI_API_KEY
 
-    if (!key || typeof key !== 'string' || key.trim() === '') {
-      throw new Error(
-        'Missing Gemini API Key: Please set VITE_GEMINI_API_KEY in your .env.local file.'
-      )
+    if (key && typeof key === 'string' && key.trim() !== '') {
+      this.client = new GoogleGenAI({ apiKey: key.trim() })
     }
-
-    this.client = new GoogleGenAI({ apiKey: key.trim() })
   }
 
   /**
@@ -27,6 +23,12 @@ export class GeminiService {
   async generateResponse(prompt: string): Promise<string> {
     if (!prompt || prompt.trim() === '') {
       throw new Error('Prompt cannot be empty.')
+    }
+
+    if (!this.client) {
+      throw new Error(
+        'Missing Gemini API Key: Please set VITE_GEMINI_API_KEY in your .env.local file.'
+      )
     }
 
     try {
