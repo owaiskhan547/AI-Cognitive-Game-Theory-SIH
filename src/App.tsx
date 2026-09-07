@@ -73,6 +73,7 @@ export function App() {
             <Route index element={<Navigate to="/caregiver/dashboard" replace />} />
             <Route path="dashboard" element={<CaregiverDashboardPage />} />
             <Route path="insights" element={<CaregiverInsightsPage />} />
+            <Route path="assistant" element={<PatientAssistantPage />} />
             <Route path="progress" element={<CaregiverProgressPage />} />
             <Route path="reminders" element={<CaregiverRemindersPage />} />
             <Route path="reports" element={<CaregiverReportsPage />} />

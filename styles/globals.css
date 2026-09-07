@@ -137,6 +137,42 @@
   animation-play-state: paused;
 }
 
+/* FAB Floating & Icon animations */
+@keyframes fab-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-fab-float {
+  animation: fab-float 3s ease-in-out infinite;
+}
+
+@keyframes mic-wiggle {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+  }
+  20% {
+    transform: scale(1.12) rotate(-8deg);
+  }
+  40% {
+    transform: scale(1.12) rotate(8deg);
+  }
+  60% {
+    transform: scale(1.06) rotate(-4deg);
+  }
+  80% {
+    transform: scale(1.06) rotate(4deg);
+  }
+}
+
+.animate-mic-wiggle {
+  animation: mic-wiggle 3s ease-in-out infinite;
+}
+
 /* Smooth scroll */
 html {
   scroll-behavior: smooth;

@@ -6,6 +6,7 @@ import { Brain, Send, User, Loader2, AlertCircle, Mic, Square } from "lucide-rea
 import { assistantRepository } from "@/features/assistant/AssistantRepository"
 import { voiceRecorder } from "@/features/assistant/voiceRecorder"
 import { speechPlayer } from "@/features/assistant/speechPlayer"
+import { useNavigate } from "react-router-dom"
 
 interface Message {
   id: string
@@ -25,6 +26,7 @@ const INITIAL_MESSAGES: Message[] = [
 ]
 
 export default function PatientAssistantPage() {
+  const navigate = useNavigate()
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES)
   const [inputText, setInputText] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -81,16 +83,17 @@ export default function PatientAssistantPage() {
 
     try {
       // 2. Request AI response
-      const aiResponseText = await assistantRepository.sendMessage(trimmed)
+      const result = await assistantRepository.sendMessageResult(trimmed)
 
       const assistantMsg: Message = {
         id: `${Date.now()}-assistant`,
         role: "assistant",
-        content: aiResponseText,
+        content: result.response,
         time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       }
 
       setMessages((prev) => [...prev, assistantMsg])
+      if (result.action === "start_game") navigate("/patient/games")
     } catch (error) {
       console.error("Failed to generate AI response:", error)
       const friendlyError = "I'm having a little trouble connecting right now, but I'm right here with you. Please try sending your message again."
@@ -163,6 +166,8 @@ export default function PatientAssistantPage() {
     }
 
     setMessages((prev) => [...prev, userMsg, assistantMsg])
+
+    if (result.result?.action === "start_game") navigate("/patient/games")
 
     // Play the AI voice without blocking the UI, with speech synthesis fallback
     speechPlayer.play(result.audio, result.response).catch((error) => {

@@ -14,7 +14,7 @@ function formatPatientContext(patientContext: string | PatientContext | null | u
     .filter((medication) => medication.isActive)
     .map(
       (medication) =>
-        `- ${medication.name}, ${medication.dosage}, ${medication.frequency}${medication.instructions ? ` (${medication.instructions})` : ''}`
+        `- ${medication.name}, ${medication.dosage}, ${medication.frequency}, status today: ${medication.isTakenToday ? 'taken' : 'not recorded as taken'}${medication.instructions ? ` (${medication.instructions})` : ''}`
     )
     .join('\n') || '- None listed'
 
@@ -32,6 +32,10 @@ function formatPatientContext(patientContext: string | PatientContext | null | u
     )
     .join('\n') || '- None listed'
 
+  const memories = (patientContext.memories ?? [])
+    .map((memory) => `- ${memory.title}${memory.description ? `: ${memory.description}` : ''}`)
+    .join('\n') || '- None stored'
+
   return [
     `Name: ${patientContext.name}`,
     `Date of Birth: ${patientContext.dateOfBirth ?? 'Not provided'}`,
@@ -39,9 +43,11 @@ function formatPatientContext(patientContext: string | PatientContext | null | u
     `Medical Notes: ${patientContext.medicalNotes ?? 'Not provided'}`,
     `Caregiver Name: ${patientContext.caregiverName ?? 'Not provided'}`,
     `Caregiver Phone: ${patientContext.caregiverPhone ?? 'Not provided'}`,
+    `Current Time: ${patientContext.currentTime ?? 'Not provided'}`,
     `Active Medications:\n${activeMedications}`,
     `Upcoming Schedule:\n${upcomingSchedule}`,
     `Family Members:\n${familyMembers}`,
+    `Stored Memories:\n${memories}`,
   ].join('\n')
 }
 

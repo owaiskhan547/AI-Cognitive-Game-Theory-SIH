@@ -65,6 +65,13 @@ export function getLocalTodayDateString(): string {
 const DEMO_PATIENT_ID = 'demo-patient-id'
 const DEMO_STORE_KEY = 'smriti_demo_store_v1'
 
+function isDemoMode(): boolean {
+  return !isSupabaseConfigured || (
+    typeof window !== 'undefined' &&
+    Boolean(window.localStorage.getItem('smriti_demo_session'))
+  )
+}
+
 function createDemoSchedule(): any[] {
   const today = getLocalTodayDateString()
   return [
@@ -260,7 +267,7 @@ function describeWriteError(error: { message?: string; code?: string } | null | 
  * because memories.patient_id references patients.id (a different UUID).
  */
 export async function resolveWritablePatientId(preferredPatientId?: string | null): Promise<string> {
-  if (!isSupabaseConfigured) {
+  if (isDemoMode()) {
     if (preferredPatientId && preferredPatientId !== 'demo-caregiver-id') {
       return preferredPatientId
     }
@@ -357,13 +364,21 @@ function buildFallbackPatient(user: any, profile?: ProfileRow | null): PatientWi
  * Never hardcodes patient ID.
  */
 export async function getCurrentPatient(): Promise<PatientWithProfile | null> {
-  if (!isSupabaseConfigured) {
+  if (isDemoMode()) {
+    let storedProfile: Partial<ProfileRow> = {}
+    if (typeof window !== 'undefined') {
+      try {
+        storedProfile = JSON.parse(window.localStorage.getItem('smriti_demo_session') || '{}').profile || {}
+      } catch {
+        storedProfile = {}
+      }
+    }
     const demoProfile = {
       id: DEMO_PATIENT_ID,
       role: 'patient',
-      full_name: 'Demo Patient',
-      phone: null,
-      dob: null,
+      full_name: storedProfile.full_name || 'Kabir Rao',
+      phone: storedProfile.phone || null,
+      dob: storedProfile.dob || null,
       avatar_url: null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -448,7 +463,7 @@ export async function getTodaySchedule(
   patientId: string,
   date: string = getLocalTodayDateString()
 ): Promise<ScheduleItemWithStatus[]> {
-  if (!isSupabaseConfigured) {
+  if (isDemoMode()) {
     const store = getDemoStore()
     return (store.schedules || [])
       .filter((item: any) => item.patient_id === patientId && item.date === date)
@@ -520,7 +535,7 @@ export async function getPatientMemories(patientId: string): Promise<any[]> {
     if (!patientId) return []
   }
 
-  if (!isSupabaseConfigured) {
+  if (isDemoMode()) {
     const store = getDemoStore()
     return (store.memories || []).filter((memory: any) => memory.patient_id === resolvedPatientId)
   }
@@ -543,7 +558,7 @@ export async function getActiveMedications(
   patientId: string,
   date: string = getLocalTodayDateString()
 ): Promise<MedicationWithLogStatus[]> {
-  if (!isSupabaseConfigured) {
+  if (isDemoMode()) {
     const store = getDemoStore()
     return (store.medications || [])
       .filter((med: any) => med.patient_id === patientId && med.is_active !== false)
@@ -633,7 +648,7 @@ export async function getMedicationLogs(
  * 5. Retrieves saved emergency contacts for the patient.
  */
 export async function getEmergencyContacts(patientId: string): Promise<EmergencyContactRow[]> {
-  if (!isSupabaseConfigured) {
+  if (isDemoMode()) {
     const store = getDemoStore()
     return (store.emergencyContacts || []).filter((contact: any) => contact.patient_id === patientId)
   }
@@ -667,7 +682,7 @@ export async function addEmergencyContact(
     throw new Error('Name and phone number are required.')
   }
 
-  if (!isSupabaseConfigured) {
+  if (isDemoMode()) {
     const store = getDemoStore()
     const newContact = {
       id: `demo-contact-${Date.now()}`,
@@ -715,7 +730,7 @@ export async function updateEmergencyContact(
     throw new Error('Name and phone number are required.')
   }
 
-  if (!isSupabaseConfigured) {
+  if (isDemoMode()) {
     const store = getDemoStore()
     const updated = (store.emergencyContacts || []).map((item: any) =>
       item.id === contactId && item.patient_id === patientId
@@ -751,7 +766,7 @@ export async function updateEmergencyContact(
  * 8. Deletes an emergency contact.
  */
 export async function deleteEmergencyContact(patientId: string, contactId: string): Promise<void> {
-  if (!isSupabaseConfigured) {
+  if (isDemoMode()) {
     const store = getDemoStore()
     store.emergencyContacts = (store.emergencyContacts || []).filter(
       (item: any) => !(item.id === contactId && item.patient_id === patientId)
@@ -776,7 +791,7 @@ export async function deleteEmergencyContact(patientId: string, contactId: strin
  * 9. Marks a medication as taken, persisting to medication_logs table in Supabase.
  */
 export async function addMedication(patientId: string, medication: { name: string; dosage: string; frequency: string; instructions?: string | null }) {
-  if (!isSupabaseConfigured) {
+  if (isDemoMode()) {
     const store = getDemoStore()
     const newMedication = {
       id: `demo-med-${Date.now()}`,
@@ -821,7 +836,7 @@ export async function updateMedication(
   medicationId: string,
   medication: { name: string; dosage: string; frequency: string; instructions?: string | null; is_active?: boolean }
 ) {
-  if (!isSupabaseConfigured) {
+  if (isDemoMode()) {
     const store = getDemoStore()
     const updated = (store.medications || []).map((item: any) => {
       if (item.id === medicationId && item.patient_id === patientId) {
@@ -861,7 +876,7 @@ export async function updateMedication(
 }
 
 export async function deleteMedication(patientId: string, medicationId: string) {
-  if (!isSupabaseConfigured) {
+  if (isDemoMode()) {
     const store = getDemoStore()
     store.medications = (store.medications || []).filter(
       (item: any) => !(item.id === medicationId && item.patient_id === patientId)
@@ -880,7 +895,7 @@ export async function deleteMedication(patientId: string, medicationId: string) 
 }
 
 export async function addScheduleItem(patientId: string, schedule: { title: string; description?: string; date: string; time: string; type?: string }) {
-  if (!isSupabaseConfigured) {
+  if (isDemoMode()) {
     const store = getDemoStore()
     const newItem = {
       id: `demo-schedule-${Date.now()}`,
@@ -925,7 +940,7 @@ export async function updateScheduleItem(
   scheduleId: string,
   schedule: { title: string; description?: string; date: string; time: string; type?: string }
 ) {
-  if (!isSupabaseConfigured) {
+  if (isDemoMode()) {
     const store = getDemoStore()
     const updated = (store.schedules || []).map((item: any) => {
       if (item.id === scheduleId && item.patient_id === patientId) {
@@ -965,7 +980,7 @@ export async function updateScheduleItem(
 }
 
 export async function deleteScheduleItem(patientId: string, scheduleId: string) {
-  if (!isSupabaseConfigured) {
+  if (isDemoMode()) {
     const store = getDemoStore()
     store.schedules = (store.schedules || []).filter(
       (item: any) => !(item.id === scheduleId && item.patient_id === patientId)
@@ -997,7 +1012,7 @@ export async function createMemory(patientId: string, memory: { title: string; d
     mediaUrl = null
   }
 
-  if (!isSupabaseConfigured) {
+  if (isDemoMode()) {
     const store = getDemoStore()
     const newMemory = {
       id: `demo-memory-${Date.now()}`,
@@ -1038,7 +1053,7 @@ export async function createMemory(patientId: string, memory: { title: string; d
 }
 
 export async function updateMemory(patientId: string, memoryId: string, memory: { title: string; description?: string; media_url?: string | null }) {
-  if (!isSupabaseConfigured) {
+  if (isDemoMode()) {
     const store = getDemoStore()
     const updated = (store.memories || []).map((item: any) => {
       if (item.id === memoryId && item.patient_id === patientId) {
@@ -1074,7 +1089,7 @@ export async function updateMemory(patientId: string, memoryId: string, memory: 
 }
 
 export async function deleteMemory(patientId: string, memoryId: string) {
-  if (!isSupabaseConfigured) {
+  if (isDemoMode()) {
     const store = getDemoStore()
     store.memories = (store.memories || []).filter(
       (item: any) => !(item.id === memoryId && item.patient_id === patientId)
@@ -1097,7 +1112,7 @@ export async function markMedicationTaken(
   medicationId: string,
   scheduledFor: string = new Date().toISOString()
 ): Promise<MedicationLogRow> {
-  if (!isSupabaseConfigured) {
+  if (isDemoMode()) {
     const store = getDemoStore()
     const updated = (store.medications || []).map((item: any) => {
       if (item.id === medicationId && item.patient_id === patientId) {
@@ -1155,7 +1170,7 @@ export async function markScheduleCompleted(
   scheduleId: string,
   status: 'completed' | 'skipped' = 'completed'
 ): Promise<ScheduleCompletionRow> {
-  if (!isSupabaseConfigured) {
+  if (isDemoMode()) {
     const store = getDemoStore()
     const updated = (store.schedules || []).map((item: any) => {
       if (item.id === scheduleId && item.patient_id === patientId) {

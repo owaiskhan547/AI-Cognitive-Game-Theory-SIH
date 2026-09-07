@@ -232,13 +232,11 @@ export default function LoginPage() {
               </div>
             )}
 
-            {!isSupabaseConfigured && (
-              <div className="mb-4 rounded-xl border border-lime-500/30 bg-lime-500/10 p-3 text-xs text-lime-200">
-                <p className="font-semibold mb-1">Demo accounts</p>
-                <p>Patient: patient@demo.local / demo1234</p>
-                <p>Caregiver: caregiver@demo.local / demo1234</p>
-              </div>
-            )}
+            <div className="mb-4 rounded-xl border border-lime-500/30 bg-lime-500/10 p-3 text-xs text-lime-200">
+              <p className="font-semibold mb-1">Prototype accounts</p>
+              <p>Patient: kabir@smriti.local / demo1234</p>
+              <p>Caregiver: ananya@smriti.local / demo1234</p>
+            </div>
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">

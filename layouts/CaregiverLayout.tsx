@@ -3,10 +3,12 @@ import { Outlet } from "react-router-dom"
 import { Bell, FileText, LayoutDashboard, Sparkles, TrendingUp } from "lucide-react"
 import { AppShell } from "@/components/app-shell/app-shell"
 import { CaregiverPatientsProvider } from "@/features/caregiver/context"
+import { VoiceAssistantFab } from "@/components/patient/voice-assistant-fab"
 
 const navItems = [
   { name: "Home", href: "/caregiver/dashboard", icon: LayoutDashboard },
   { name: "Insights", href: "/caregiver/insights", icon: Sparkles },
+  { name: "AI Assistant", href: "/caregiver/assistant", icon: Sparkles },
   { name: "Progress", href: "/caregiver/progress", icon: TrendingUp },
   { name: "Reminders", href: "/caregiver/reminders", icon: Bell },
   { name: "Reports", href: "/caregiver/reports", icon: FileText },
@@ -17,6 +19,7 @@ export function CaregiverLayout({ children }: { children?: ReactNode }) {
     <CaregiverPatientsProvider>
       <AppShell items={navItems} homeHref="/caregiver/dashboard" profileHref="/caregiver/dashboard">
         {children || <Outlet />}
+        <VoiceAssistantFab href="/caregiver/assistant" />
       </AppShell>
     </CaregiverPatientsProvider>
   )

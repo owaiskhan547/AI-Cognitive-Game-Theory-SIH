@@ -14,18 +14,19 @@ const DEMO_STORAGE_KEY = 'smriti_demo_session'
 const DEMO_REGISTERED_KEY = 'smriti_demo_registered_account'
 const DEMO_ACCOUNTS = [
   {
-    email: 'patient@demo.local',
+    email: 'kabir@smriti.local',
     password: 'demo1234',
     role: 'patient' as UserRole,
-    fullName: 'Demo Patient',
+    fullName: 'Kabir Rao',
   },
   {
-    email: 'caregiver@demo.local',
+    email: 'ananya@smriti.local',
     password: 'demo1234',
     role: 'caregiver' as UserRole,
-    fullName: 'Demo Caregiver',
+    fullName: 'Ananya Rao',
   },
 ]
+const DEMO_PASSWORDS = new Set(['demo1234', 'Smriti2026!'])
 
 const createDemoUser = (email: string, fullName: string, role: UserRole) => {
   const user = {
@@ -101,6 +102,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
+
+  const startDemoSession = (account: { email: string; fullName: string; role: UserRole }) => {
+    const demoUser = createDemoUser(account.email, account.fullName, account.role)
+    const demoProfile = createDemoProfile(demoUser)
+
+    persistDemoSession(demoUser, demoProfile)
+    setUser(demoUser)
+    setProfile(demoProfile)
+    setSession({
+      access_token: 'demo-access-token',
+      refresh_token: 'demo-refresh-token',
+      expires_in: 3600,
+      expires_at: Math.floor(Date.now() / 1000) + 3600,
+      token_type: 'bearer',
+      user: demoUser,
+    } as Session)
+
+    return { user: demoUser, session: { access_token: 'demo-access-token' }, profile: demoProfile }
+  }
 
   const buildMetadataProfile = (currentUser: User, roleOverride?: UserRole | null): Profile => {
     const pendingRole = (typeof window !== 'undefined' ? localStorage.getItem('smriti_pending_oauth_role') : null) as UserRole | null
@@ -267,24 +287,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
+    const storedDemo = readDemoSession()
+    if (storedDemo?.user) {
+      const demoUser = storedDemo.user as User
+      const demoProfile = (storedDemo.profile as Profile) || createDemoProfile(demoUser)
+      setUser(demoUser)
+      setSession({
+        access_token: 'demo-access-token',
+        refresh_token: 'demo-refresh-token',
+        expires_in: 3600,
+        expires_at: Math.floor(Date.now() / 1000) + 3600,
+        token_type: 'bearer',
+        user: demoUser,
+      } as Session)
+      setProfile(demoProfile)
+      setLoading(false)
+      return
+    }
+
     if (!isSupabaseConfigured) {
-      const storedDemo = readDemoSession()
-
-      if (storedDemo?.user) {
-        const demoUser = storedDemo.user as User
-        const demoProfile = (storedDemo.profile as Profile) || createDemoProfile(demoUser)
-        setUser(demoUser)
-        setSession({
-          access_token: 'demo-access-token',
-          refresh_token: 'demo-refresh-token',
-          expires_in: 3600,
-          expires_at: Math.floor(Date.now() / 1000) + 3600,
-          token_type: 'bearer',
-          user: demoUser,
-        } as Session)
-        setProfile(demoProfile)
-      }
-
       setLoading(false)
       return
     }
@@ -321,9 +342,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const handleSignIn = async (email: string, password: string, intendedRole?: UserRole) => {
+    const demoAccount = DEMO_ACCOUNTS.find(
+      (item) => item.email.toLowerCase() === email.trim().toLowerCase() && DEMO_PASSWORDS.has(password)
+    )
+    if (demoAccount) return startDemoSession(demoAccount)
+
     if (!isSupabaseConfigured) {
       let account = DEMO_ACCOUNTS.find(
-        (item) => item.email.toLowerCase() === email.trim().toLowerCase() && item.password === password
+        (item) => item.email.toLowerCase() === email.trim().toLowerCase() && DEMO_PASSWORDS.has(password)
       )
 
       if (!account && typeof window !== 'undefined') {
@@ -338,7 +364,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (!account) {
-        throw new Error('Invalid demo credentials. Use patient@demo.local / demo1234 or caregiver@demo.local / demo1234.')
+        throw new Error('Invalid demo credentials. Use kabir@smriti.local / demo1234 or ananya@smriti.local / demo1234.')
       }
 
       const demoUser = createDemoUser(account.email, account.fullName, account.role)
@@ -455,8 +481,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const handleSignOut = async () => {
-    if (!isSupabaseConfigured) {
-      clearDemoSession()
+    const isDemoUser = user?.id === 'demo-patient-id' || user?.id === 'demo-caregiver-id'
+    clearDemoSession()
+    if (!isSupabaseConfigured || isDemoUser) {
       setUser(null)
       setSession(null)
       setProfile(null)
