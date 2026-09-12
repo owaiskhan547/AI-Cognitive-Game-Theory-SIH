@@ -1,7 +1,4 @@
 # AI-Cognitive-Game-Theory-SIH
-<<<<<<< HEAD
-Games and reminders that support memory and cognition, aimed at elderly users.
-=======
 
 AI-powered cognitive care platform for elderly users with memory support, reminders, caregiver dashboards, and guided wellness tools.
 
@@ -66,4 +63,3 @@ npm run preview
   powershell -ExecutionPolicy Bypass -NoProfile -Command "npm run dev -- --host 0.0.0.0"
 
 - The app uses a demo fall-back mode when Supabase environment variables are not configured.
->>>>>>> c803a0274886f346c6bb60935235b314baec755d
